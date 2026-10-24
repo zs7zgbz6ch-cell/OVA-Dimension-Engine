@@ -1,7 +1,72 @@
-const hm=s=>{const[h,m]=s.split(":").map(Number);return h*60+m};
-const dateMatch=(r,c)=>r.recurrence==="daily"||r.recurrence==="weekly"&&(r.weekdays||[]).includes(c.weekday)||r.recurrence==="monthly"&&(r.days||[]).includes(c.day)||r.recurrence==="yearly"&&(r.dates||[]).some(x=>x.month===c.month&&x.day===c.day)||r.recurrence==="once"&&r.date?.year===c.year&&r.date?.month===c.month&&r.date?.day===c.day;
-const active=(b,c)=>{if(!dateMatch(b,c))return false;const n=c.hour*60+c.minute,s=hm(b.start),e=hm(b.end);return s<=e?n>=s&&n<e:n>=s||n<e};
-export class AgendaBook{
- constructor(){this.map=new Map()} register(a){if(this.map.has(a.id))throw Error(`Duplicate agenda ${a.id}`);this.map.set(a.id,a)}
- resolve(id,c){const a=this.map.get(id);if(!a)throw Error(`Unknown agenda ${id}`);return a.blocks.filter(b=>active(b,c)).sort((x,y)=>(y.priority||0)-(x.priority||0))[0]||a.fallback||null}
+function minutesOfDay(value) {
+    const [hour, minute] = value.split(":").map(Number);
+    return hour * 60 + minute;
+}
+
+function dateMatches(block, clock) {
+    if (block.recurrence === "daily") return true;
+
+    if (block.recurrence === "weekly") {
+        return (block.weekdays || []).includes(clock.weekday);
+    }
+
+    if (block.recurrence === "monthly") {
+        return (block.days || []).includes(clock.day);
+    }
+
+    if (block.recurrence === "yearly") {
+        return (block.dates || []).some(
+            date => date.month === clock.month && date.day === clock.day
+        );
+    }
+
+    if (block.recurrence === "once") {
+        return (
+            block.date?.year === clock.year &&
+            block.date?.month === clock.month &&
+            block.date?.day === clock.day
+        );
+    }
+
+    return false;
+}
+
+function isActive(block, clock) {
+    if (!dateMatches(block, clock)) return false;
+
+    const now = clock.hour * 60 + clock.minute;
+    const start = minutesOfDay(block.start);
+    const end = minutesOfDay(block.end);
+
+    if (start < end) return now >= start && now < end;
+    if (start > end) return now >= start || now < end;
+
+    return true;
+}
+
+export class AgendaBook {
+    constructor() {
+        this.agendas = new Map();
+    }
+
+    register(agenda) {
+        if (this.agendas.has(agenda.id)) {
+            throw new Error(`Duplicate agenda: ${agenda.id}`);
+        }
+        this.agendas.set(agenda.id, agenda);
+    }
+
+    resolve(agendaId, clock) {
+        const agenda = this.agendas.get(agendaId);
+
+        if (!agenda) {
+            throw new Error(`Unknown agenda: ${agendaId}`);
+        }
+
+        return agenda.blocks
+            .filter(block => isActive(block, clock))
+            .sort((a, b) => (b.priority || 0) - (a.priority || 0))[0]
+            || agenda.fallback
+            || null;
+    }
 }

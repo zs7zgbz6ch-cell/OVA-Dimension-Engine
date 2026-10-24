@@ -1,9 +1,81 @@
-export class World{
- constructor(d){this.data=d;this.nodes=new Map();this.edges=new Map();
-  for(const [sceneId,scene] of Object.entries(d.scenes))for(const spot of scene.spots){const k=this.key(sceneId,spot.id);this.nodes.set(k,{scene:sceneId,...spot});this.edges.set(k,new Set())}
-  for(const {a,b} of d.connections){const A=this.key(a.scene,a.spot),B=this.key(b.scene,b.spot);if(!this.nodes.has(A)||!this.nodes.has(B))throw Error(`Bad World edge ${A} ↔ ${B}`);this.edges.get(A).add(B);this.edges.get(B).add(A)}
- } key(s,p){return `${s}/${p}`} has(l){return l&&this.nodes.has(this.key(l.scene,l.spot))}
- findPath(a,b){const A=this.key(a.scene,a.spot),B=this.key(b.scene,b.spot);if(!this.nodes.has(A)||!this.nodes.has(B))return null;const q=[A],prev=new Map([[A,null]]);
-  while(q.length){const c=q.shift();if(c===B){const out=[];for(let x=B;x;x=prev.get(x))out.push(this.nodes.get(x));return out.reverse()}for(const n of this.edges.get(c)){if(!prev.has(n)){prev.set(n,c);q.push(n)}}}return null}
+export class World {
+    constructor(data) {
+        this.data = data;
+        this.nodes = new Map();
+        this.edges = new Map();
+
+        for (const [sceneId, scene] of Object.entries(data.scenes)) {
+            for (const spot of scene.spots) {
+                const key = this.key(sceneId, spot.id);
+                this.nodes.set(key, { scene: sceneId, ...spot });
+                this.edges.set(key, new Set());
+            }
+        }
+
+        for (const { a, b } of data.connections) {
+            const keyA = this.key(a.scene, a.spot);
+            const keyB = this.key(b.scene, b.spot);
+
+            if (!this.nodes.has(keyA) || !this.nodes.has(keyB)) {
+                throw new Error(`Bad World connection: ${keyA} ↔ ${keyB}`);
+            }
+
+            this.edges.get(keyA).add(keyB);
+            this.edges.get(keyB).add(keyA);
+        }
+    }
+
+    key(sceneId, spotId) {
+        return `${sceneId}/${spotId}`;
+    }
+
+    has(location) {
+        return Boolean(
+            location &&
+            this.nodes.has(this.key(location.scene, location.spot))
+        );
+    }
+
+    findPath(startLocation, destination) {
+        const start = this.key(startLocation.scene, startLocation.spot);
+        const end = this.key(destination.scene, destination.spot);
+
+        if (!this.nodes.has(start) || !this.nodes.has(end)) return null;
+
+        const queue = [start];
+        const previous = new Map([[start, null]]);
+
+        while (queue.length) {
+            const current = queue.shift();
+
+            if (current === end) {
+                const path = [];
+                for (let key = end; key !== null; key = previous.get(key)) {
+                    path.push(this.nodes.get(key));
+                }
+                return path.reverse();
+            }
+
+            for (const neighbour of this.edges.get(current)) {
+                if (!previous.has(neighbour)) {
+                    previous.set(neighbour, current);
+                    queue.push(neighbour);
+                }
+            }
+        }
+
+        return null;
+    }
 }
-export async function loadWorld(){const r=await fetch("./world/world-stage.json",{cache:"no-store"});if(!r.ok)throw Error(`World load ${r.status}`);return new World(await r.json())}
+
+export async function loadWorld() {
+    const response = await fetch("./world/world-stage.json", {
+        cache: "no-store"
+    });
+
+    if (!response.ok) {
+        throw new Error(`World Stage failed to load (${response.status}).`);
+    }
+
+    return new World(await response.json());
+}
