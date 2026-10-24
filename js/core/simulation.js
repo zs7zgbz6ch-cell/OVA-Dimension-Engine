@@ -14,11 +14,16 @@ function clockFromEpochMinute(epochMinute) {
     };
 }
 
+function sameLocation(a, b) {
+    return a.scene === b.scene && a.spot === b.spot;
+}
+
 export class Simulation {
-    constructor({ gear, entities, agendas }) {
+    constructor({ gear, entities, agendas, navigator }) {
         this.gear = gear;
         this.entities = entities;
         this.agendas = agendas;
+        this.navigator = navigator;
         this.log = [];
     }
 
@@ -44,16 +49,34 @@ export class Simulation {
             const intent = this.agendas.resolve(entity.agendaId, clock);
             if (!intent) continue;
 
-            if (this.entities.applyAgendaIntent(
+            const agendaChanged = this.entities.applyAgendaState(
                 entity.id,
                 intent,
                 clock.epochMinute
-            )) {
+            );
+
+            const locationChanged = !sameLocation(
+                entity.state.location,
+                intent.destination
+            );
+
+            let navigation = null;
+
+            if (locationChanged) {
+                navigation = this.navigator.navigate(
+                    entity.id,
+                    intent.destination,
+                    clock.epochMinute
+                );
+            }
+
+            if (agendaChanged || navigation?.moved) {
                 this.log.push({
                     time: `${String(clock.hour).padStart(2, "0")}:${String(clock.minute).padStart(2, "0")}`,
                     name: entity.name,
                     activity: entity.state.activity,
-                    location: entity.state.location,
+                    location: { ...entity.state.location },
+                    route: navigation?.route || null,
                     reason
                 });
             }

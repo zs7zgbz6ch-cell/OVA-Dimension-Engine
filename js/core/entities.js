@@ -31,34 +31,46 @@ export class EntityRegistry {
         return entity;
     }
 
+    get(entityId) {
+        return this.entities.get(entityId) || null;
+    }
+
     all() {
         return [...this.entities.values()];
     }
 
-    applyAgendaIntent(entityId, intent, epochMinute) {
-        const entity = this.entities.get(entityId);
-
+    applyAgendaState(entityId, intent, epochMinute) {
+        const entity = this.get(entityId);
         if (!entity) throw new Error(`Unknown entity: ${entityId}`);
-        if (!this.world.has(intent.destination)) {
-            throw new Error(`Bad destination for ${entityId}`);
-        }
 
-        const old = entity.state;
         const changed =
-            old.agendaBlockId !== intent.id ||
-            old.activity !== intent.activity ||
-            old.location.scene !== intent.destination.scene ||
-            old.location.spot !== intent.destination.spot;
+            entity.state.agendaBlockId !== intent.id ||
+            entity.state.activity !== intent.activity;
 
         if (!changed) return false;
 
-        entity.state = {
-            location: copyLocation(intent.destination),
-            agendaBlockId: intent.id,
-            activity: intent.activity,
-            sinceEpochMinute: epochMinute
-        };
+        entity.state.agendaBlockId = intent.id;
+        entity.state.activity = intent.activity;
+        entity.state.sinceEpochMinute = epochMinute;
+        return true;
+    }
 
+    moveTo(entityId, location, epochMinute) {
+        const entity = this.get(entityId);
+
+        if (!entity) throw new Error(`Unknown entity: ${entityId}`);
+        if (!this.world.has(location)) {
+            throw new Error(`Bad location for ${entityId}`);
+        }
+
+        const changed =
+            entity.state.location.scene !== location.scene ||
+            entity.state.location.spot !== location.spot;
+
+        if (!changed) return false;
+
+        entity.state.location = copyLocation(location);
+        entity.state.sinceEpochMinute = epochMinute;
         return true;
     }
 }
