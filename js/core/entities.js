@@ -73,4 +73,27 @@ export class EntityRegistry {
         entity.state.sinceEpochMinute = epochMinute;
         return true;
     }
+    snapshot() {
+        return Object.fromEntries(this.all().map(entity => [entity.id, {
+            location: copyLocation(entity.state.location),
+            agendaBlockId: entity.state.agendaBlockId,
+            activity: entity.state.activity,
+            sinceEpochMinute: entity.state.sinceEpochMinute
+        }]));
+    }
+
+    restore(snapshot) {
+        for (const entity of this.all()) {
+            const state = snapshot[entity.id];
+            if (!state) throw new Error(`Missing saved entity: ${entity.id}`);
+            if (!this.world.has(state.location)) throw new Error(`Bad saved location: ${entity.id}`);
+            entity.state = {
+                location: copyLocation(state.location),
+                agendaBlockId: state.agendaBlockId ?? null,
+                activity: state.activity,
+                sinceEpochMinute: state.sinceEpochMinute ?? null
+            };
+        }
+    }
+
 }

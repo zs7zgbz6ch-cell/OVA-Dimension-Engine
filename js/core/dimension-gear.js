@@ -21,6 +21,13 @@ export class DimensionGear {
         };
     }
 
+    setEpochMinute(epochMinute) {
+        if (!Number.isInteger(epochMinute)) {
+            throw new Error("Invalid Dimension Gear time.");
+        }
+        this.date = new Date(epochMinute * MINUTE_MS);
+    }
+
     advance(minutes) {
         if (!Number.isInteger(minutes) || minutes < 0) {
             throw new Error("Invalid Dimension Gear advance.");
