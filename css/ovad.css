@@ -35,3 +35,13 @@ p { font-size: 12px; overflow-wrap: anywhere; }
 .log { max-height: 300px; overflow: auto; }
 .log div { padding: 8px 0; border-top: 1px solid #252a31; font-size: 12px; }
 .note { opacity: 0.55; font-size: 12px; line-height: 1.5; }
+
+.route {
+    margin-top: 0.35rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid #3b414b;
+    color: #8f98a6;
+    font-size: 0.82em;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
