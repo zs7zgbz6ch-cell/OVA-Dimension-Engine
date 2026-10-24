@@ -3,6 +3,7 @@ import { DimensionGear } from "./core/dimension-gear.js";
 import { AgendaBook } from "./core/agenda.js";
 import { EntityRegistry } from "./core/entities.js";
 import { Simulation } from "./core/simulation.js";
+import { Navigator } from "./core/navigation.js";
 import {
     RIONNE,
     BARMAID,
@@ -43,7 +44,8 @@ async function boot() {
     entities.register(RIONNE);
     entities.register(BARMAID);
 
-    const simulation = new Simulation({ gear, entities, agendas });
+    const navigator = new Navigator({ world, entities });
+    const simulation = new Simulation({ gear, entities, agendas, navigator });
     simulation.initialize();
 
     function render() {
@@ -65,6 +67,7 @@ async function boot() {
                 ${escapeHtml(entry.name)} →
                 ${escapeHtml(entry.activity)} ·
                 ${escapeHtml(entry.location.scene)}/${escapeHtml(entry.location.spot)}
+                ${entry.route ? `<div class="route">ROUTE · ${entry.route.map(step => escapeHtml(`${step.scene}/${step.spot}`)).join(" → ")}</div>` : ""}
             </div>
         `).join("");
     }
@@ -87,7 +90,7 @@ async function boot() {
         "ready"
     );
 
-    window.OVAD = { world, gear, agendas, entities, simulation };
+    window.OVAD = { world, gear, agendas, entities, navigator, simulation };
 }
 
 boot().catch(error => {
