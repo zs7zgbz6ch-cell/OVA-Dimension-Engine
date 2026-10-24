@@ -1,1 +1,39 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>OVA-D Engine 0.1</title><link rel="stylesheet" href="./css/ovad.css"></head><body><main><div class="tag">OVA-DIMENSION · CLEAN ENGINE 0.1</div><div id="clock" class="clock">BOOTING…</div><div class="buttons"><button data-min="1">+1 MIN</button><button data-min="5">+5 MIN</button><button data-min="30">+30 MIN</button><button data-min="60">+60 MIN</button><button data-min="720">+12 H</button><button id="reset">RESET</button></div><section id="entities" class="grid"></section><section class="panel"><h3>SIMULATION CHANGES</h3><div id="log" class="log"></div></section><p class="note">Developer harness only. Presentation does not own world state. Every registered entity uses the same Dimension Gear → Agenda → Entity pipeline.</p></main><script type="module" src="./js/main.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+    <title>OVA-D Engine 0.1.1</title>
+    <link rel="stylesheet" href="./css/ovad.css">
+</head>
+<body>
+    <main>
+        <div class="tag">OVA-DIMENSION · CLEAN ENGINE 0.1.1</div>
+        <div id="clock" class="clock">BOOTING…</div>
+        <div id="status" class="status">JavaScript module requested…</div>
+
+        <div class="buttons">
+            <button data-min="1">+1 MIN</button>
+            <button data-min="5">+5 MIN</button>
+            <button data-min="30">+30 MIN</button>
+            <button data-min="60">+60 MIN</button>
+            <button data-min="720">+12 H</button>
+            <button id="reset">RESET</button>
+        </div>
+
+        <section id="entities" class="grid"></section>
+
+        <section class="panel">
+            <h3>SIMULATION CHANGES</h3>
+            <div id="log" class="log"></div>
+        </section>
+
+        <p class="note">
+            Developer harness only. Presentation does not own world state.
+            Every registered entity uses the same Dimension Gear → Agenda → Entity pipeline.
+        </p>
+    </main>
+
+    <script type="module" src="./js/main.js"></script>
+</body>
+</html>
