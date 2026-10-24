@@ -1,39 +1,98 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-    <title>OVA-D Engine 0.2</title>
-    <link rel="stylesheet" href="./css/ovad.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="OVA-D">
+  <meta name="theme-color" content="#050303">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <link rel="stylesheet" href="./css/ovad.css">
+  <title>OVA-Dimension</title>
 </head>
 <body>
-    <main>
-        <div class="tag">OVA-DIMENSION · CLEAN ENGINE 0.2</div>
-        <div id="clock" class="clock">BOOTING…</div>
-        <div id="status" class="status">JavaScript module requested…</div>
+<div id="app" class="startup">
+  <div id="scene" class="scene" aria-label="OVA-D scene"></div>
+  <div class="vignette"></div>
 
-        <div class="buttons">
-            <button data-min="1">+1 MIN</button>
-            <button data-min="5">+5 MIN</button>
-            <button data-min="30">+30 MIN</button>
-            <button data-min="60">+60 MIN</button>
-            <button data-min="720">+12 H</button>
-            <button id="reset">RESET</button>
+  <div id="welcomeScreen" class="welcome-screen interactive" data-interactive>
+    <div class="welcome-card">
+      <div class="welcome-kicker">ICHI X STUDIO</div>
+      <div class="welcome-title">OVA-DIMENSION</div>
+      <div class="welcome-line">Somewhere, another door is waiting.</div>
+      <div class="welcome-help">An interactive anime world.</div>
+      <div class="welcome-tap">TAP TO ENTER</div>
+    </div>
+  </div>
+  <div id="startupBlack" class="startup-black"></div>
+
+  <div id="overlay" class="overlay interactive" data-interactive>
+    <aside class="sheet" aria-label="OVA-D menu">
+      <button class="close" id="closeBtn" type="button" aria-label="Close menu">×</button>
+
+      <section class="page active" id="mainPage">
+        <div class="kicker">OVA-Dimension</div><h1 class="title">MENU</h1><div class="rule"></div>
+        <div class="nav">
+          <button type="button" data-page="locationsPage">LOCATIONS<small>Move through the places you know.</small></button>
+          <button type="button" data-action="save">SAVE<small>Store the current world state.</small></button>
+          <button type="button" data-action="load">LOAD<small>Restore your saved world state.</small></button>
+          <button type="button" data-page="settingsPage">SETTINGS<small>Presentation and interface options.</small></button>
+          <button type="button" data-page="extraPage">EXTRA<small>Archive and development tools.</small></button>
         </div>
+      </section>
 
-        <section id="entities" class="grid"></section>
+      <section class="page" id="locationsPage">
+        <button class="back" type="button" data-page="mainPage">‹ MENU</button>
+        <div class="kicker">Known places</div><h2 class="title">LOCATIONS</h2><div class="rule"></div>
+        <div class="location-list">
+          <button class="loc" type="button" data-scene="BERKLITH_TAVERN">
+            <img src="./assets/berklith-tavern.jpg" alt=""><span class="loctext"><span class="locname">MAIN TAVERN</span><span class="locmeta">BERKLITH TAVERN</span></span>
+          </button>
+          <button class="loc" type="button" data-scene="RIONNES_ROOM">
+            <img src="./assets/rionnes-room.jpg" alt=""><span class="loctext"><span class="locname">RIONNE'S ROOM</span><span class="locmeta">UPSTAIRS · PRIVATE QUARTERS</span></span>
+          </button>
+        </div>
+      </section>
 
-        <section class="panel">
-            <h3>SIMULATION CHANGES</h3>
-            <div id="log" class="log"></div>
-        </section>
+      <section class="page" id="settingsPage">
+        <button class="back" type="button" data-page="mainPage">‹ MENU</button>
+        <div class="kicker">Presentation</div><h2 class="title">SETTINGS</h2><div class="rule"></div>
+        <button class="subbtn" id="motionBtn" type="button">MENU MOTION · ON</button>
+        <p class="menu-copy">More presentation, audio and accessibility options can live here later without cluttering the scene.</p>
+      </section>
 
-        <p class="note">
-            Developer harness only. Presentation does not own world state.
-            Every registered entity uses the same Dimension Gear → Agenda → Navigation → Entity pipeline.
-        </p>
-    </main>
+      <section class="page" id="extraPage">
+        <button class="back" type="button" data-page="mainPage">‹ MENU</button>
+        <div class="kicker">Archive</div><h2 class="title">EXTRA</h2><div class="rule"></div>
+        <p class="menu-copy">Character art, discovered places and OVA extras will live here later.</p>
+        <details class="dev-tools">
+          <summary>DEVELOPMENT</summary>
+          <div id="worldTimeReadout" class="dev-readout">WORLD TIME</div>
+          <div class="dev-buttons"><button data-dev-min="1">+1 MIN</button><button data-dev-min="5">+5 MIN</button><button data-dev-min="30">+30 MIN</button><button data-dev-min="60">+60 MIN</button></div>
+          <button class="subbtn reset" id="resetBtn" type="button">RESET PROTOTYPE</button>
+        </details>
+      </section>
+    </aside>
+  </div>
 
-    <script type="module" src="./js/main.js"></script>
+  <div id="preview" class="preview interactive" data-interactive>
+    <button id="previewBack" class="preview-back" type="button">‹ BACK</button>
+    <img id="previewImg" alt="">
+    <div class="preview-info"><div id="previewTitle" class="preview-title"></div><div id="previewSub" class="preview-sub"></div><button id="goBtn" type="button">GO</button></div>
+  </div>
+
+  <div id="confirm" class="confirm interactive" data-interactive>
+    <div class="confirm-card"><div class="kicker">Development</div><h2>RESET PROTOTYPE?</h2><p>This clears the clean-engine save and restarts the world.</p><div><button id="cancelReset">CANCEL</button><button id="confirmReset" class="danger">RESET</button></div></div>
+  </div>
+
+  <div id="holdRing" class="hold-ring"><svg viewBox="0 0 36 36"><circle class="track" cx="18" cy="18" r="15.9155"/><circle id="holdProgress" class="progress" cx="18" cy="18" r="15.9155"/></svg></div>
+  <div id="fade" class="fade"></div>
+  <div id="toast" class="toast"></div>
+</div>
+
+<div class="orientation-guard" aria-live="polite"><div class="orientation-card"><div class="orientation-mark"></div><div class="orientation-kicker">OVA-DIMENSION</div><div class="orientation-title">DESIGNED FOR LANDSCAPE</div><div class="orientation-copy">Please rotate your device to continue.</div></div></div>
+<script type="module" src="./js/main.js"></script>
 </body>
 </html>
