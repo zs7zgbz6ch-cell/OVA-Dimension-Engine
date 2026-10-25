@@ -1,11 +1,13 @@
 export const GAME_START = {
-    // Temporary production-shell start. When HUB is authored in World Stage,
-    // only this configuration needs to change.
-    location: { scene: 'BERKLITH_TAVERN', spot: 'SPOT_01' }
+    // Temporary until HUB exists. Player presence is scene-level: the player
+    // observes a Scene and is not staged on an entity navigation Spot.
+    scene: 'BERKLITH_TAVERN',
+    discoveredScenes: ['BERKLITH_TAVERN', 'RIONNES_ROOM']
 };
 
-// Presentation metadata can decorate World scenes, but cannot create them.
-export const SCENE_PRESENTATION = {
+// Player-facing content decorates scenes that physically exist in World Stage.
+// It never creates geography and never stores runtime player state.
+export const SCENE_CONTENT = {
     BERKLITH_TAVERN: {
         title: 'MAIN TAVERN',
         subtitle: 'BERKLITH TAVERN'
