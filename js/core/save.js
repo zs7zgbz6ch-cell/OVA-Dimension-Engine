@@ -1,4 +1,4 @@
-const SAVE_KEY = 'ovad_clean_engine_save_v031';
+const SAVE_KEY = 'ovad_clean_engine_save_v032';
 
 export class SaveSystem {
     constructor({ gear, entities, player }) {
@@ -9,7 +9,7 @@ export class SaveSystem {
 
     capture(presentation = {}) {
         return {
-            version: 2,
+            version: 3,
             epochMinute: this.gear.epochMinute,
             player: this.player.snapshot(),
             entities: this.entities.snapshot(),
@@ -25,7 +25,7 @@ export class SaveSystem {
         const raw = localStorage.getItem(SAVE_KEY);
         if (!raw) return null;
         const save = JSON.parse(raw);
-        if (save?.version !== 2 || !Number.isInteger(save.epochMinute) || !save.player || !save.entities) {
+        if (save?.version !== 3 || !Number.isInteger(save.epochMinute) || !save.player || !save.entities) {
             throw new Error('Unsupported OVA-D save data.');
         }
         this.gear.setEpochMinute(save.epochMinute);

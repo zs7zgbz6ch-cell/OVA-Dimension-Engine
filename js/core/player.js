@@ -1,40 +1,69 @@
-function copyLocation(location) {
-    return { scene: location.scene, spot: location.spot };
+function uniqueSceneIds(sceneIds = []) {
+    return [...new Set(sceneIds.filter(Boolean))];
 }
 
 export class PlayerState {
     constructor({ world, start }) {
         this.world = world;
-        if (!world.has(start.location)) throw new Error('Bad player start location.');
+        if (!world.hasScene(start.scene)) throw new Error('Bad player start scene.');
+
+        const discoveredScenes = uniqueSceneIds([
+            ...(start.discoveredScenes || []),
+            start.scene
+        ]);
+        for (const sceneId of discoveredScenes) {
+            if (!world.hasScene(sceneId)) throw new Error(`Bad discovered scene: ${sceneId}`);
+        }
+
         this.state = {
-            location: copyLocation(start.location),
-            interaction: 'FREE'
+            scene: start.scene,
+            interaction: 'FREE',
+            discoveredScenes
         };
     }
 
-    get location() { return copyLocation(this.state.location); }
+    get sceneId() { return this.state.scene; }
     get interaction() { return this.state.interaction; }
-    get sceneId() { return this.state.location.scene; }
     get isFree() { return this.state.interaction === 'FREE'; }
+    get discoveredScenes() { return [...this.state.discoveredScenes]; }
 
     setInteraction(interaction) {
         this.state.interaction = interaction || 'FREE';
     }
 
-    moveTo(location) {
-        if (!this.world.has(location)) throw new Error('Bad player destination.');
-        this.state.location = copyLocation(location);
+    moveToScene(sceneId) {
+        if (!this.world.hasScene(sceneId)) throw new Error(`Bad player destination scene: ${sceneId}`);
+        this.state.scene = sceneId;
+        this.discover(sceneId);
+    }
+
+    discover(sceneId) {
+        if (!this.world.hasScene(sceneId)) throw new Error(`Cannot discover unknown scene: ${sceneId}`);
+        if (!this.state.discoveredScenes.includes(sceneId)) this.state.discoveredScenes.push(sceneId);
+    }
+
+    knows(sceneId) {
+        return this.state.discoveredScenes.includes(sceneId);
     }
 
     snapshot() {
-        return { location: this.location, interaction: this.interaction };
+        return {
+            scene: this.sceneId,
+            interaction: this.interaction,
+            discoveredScenes: this.discoveredScenes
+        };
     }
 
     restore(snapshot) {
-        if (!snapshot || !this.world.has(snapshot.location)) throw new Error('Bad saved player location.');
+        if (!snapshot || !this.world.hasScene(snapshot.scene)) throw new Error('Bad saved player scene.');
+        const discoveredScenes = uniqueSceneIds([...(snapshot.discoveredScenes || []), snapshot.scene]);
+        for (const sceneId of discoveredScenes) {
+            if (!this.world.hasScene(sceneId)) throw new Error(`Bad saved discovered scene: ${sceneId}`);
+        }
         this.state = {
-            location: copyLocation(snapshot.location),
-            interaction: snapshot.interaction || 'FREE'
+            scene: snapshot.scene,
+            interaction: snapshot.interaction || 'FREE',
+            discoveredScenes
         };
     }
 }

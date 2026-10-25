@@ -37,11 +37,8 @@ export class World {
         return this.data.scenes[sceneId] || null;
     }
 
-    defaultLocationForScene(sceneId) {
-        const scene = this.scene(sceneId);
-        if (!scene?.spots?.length) return null;
-        const preferred = scene.spots.find(spot => spot.type === 'transfer') || scene.spots[0];
-        return { scene: sceneId, spot: preferred.id };
+    hasScene(sceneId) {
+        return Boolean(this.scene(sceneId));
     }
 
     has(location) {
