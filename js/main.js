@@ -2,66 +2,111 @@ import { loadWorld } from './core/world.js';
 import { DimensionGear } from './core/dimension-gear.js';
 import { AgendaBook } from './core/agenda.js';
 import { EntityRegistry } from './core/entities.js';
+import { PlayerState } from './core/player.js';
 import { Simulation } from './core/simulation.js';
 import { Navigator } from './core/navigation.js';
 import { SaveSystem } from './core/save.js';
 import { RIONNE, BARMAID, RIONNE_AGENDA, BARMAID_AGENDA } from './content/data.js';
+import { GAME_START, SCENE_PRESENTATION } from './content/game.js';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
-const SCENES = {
-    BERKLITH_TAVERN: { title: 'MAIN TAVERN', sub: 'BERKLITH TAVERN', image: './assets/berklith-tavern.jpg' },
-    RIONNES_ROOM: { title: "RIONNE'S ROOM", sub: 'UPSTAIRS · PRIVATE QUARTERS', image: './assets/rionnes-room.jpg' }
-};
 const app=$('#app'), scene=$('#scene'), overlay=$('#overlay'), preview=$('#preview'), fade=$('#fade'), toast=$('#toast');
 const welcome=$('#welcomeScreen'), startupBlack=$('#startupBlack'), holdRing=$('#holdRing'), holdProgress=$('#holdProgress');
-let currentScene='BERKLITH_TAVERN', targetScene=currentScene, motion=true, toastTimer, startupLeaving=false;
+let targetLocation=null, motion=true, toastTimer, startupLeaving=false;
 
 function say(message){toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),1800)}
 function page(id){$$('.page').forEach(node=>node.classList.toggle('active',node.id===id))}
-function showScene(id){if(!SCENES[id])throw new Error(`Unknown presentation scene: ${id}`);currentScene=id;scene.style.backgroundImage=`url('${SCENES[id].image}')`}
-function openMenu(){page('mainPage');updateClock();overlay.classList.add('open')}
-function closeMenu(){overlay.classList.remove('open')}
-function presentationState(){return {scene:currentScene,motion}}
+function sceneMeta(world, sceneId){
+    const worldScene=world.scene(sceneId);
+    if(!worldScene) throw new Error(`Unknown World scene: ${sceneId}`);
+    const presentation=SCENE_PRESENTATION[sceneId] || {};
+    return {
+        title: presentation.title || sceneId.replaceAll('_',' '),
+        subtitle: presentation.subtitle || '',
+        image: worldScene.background ? `./${worldScene.background.replace(/^\.\//,'')}` : ''
+    };
+}
+function renderPlayerScene(world, player){
+    const data=sceneMeta(world,player.sceneId);
+    scene.style.backgroundImage=data.image?`url('${data.image}')`:'none';
+    scene.dataset.scene=player.sceneId;
+}
+function renderLocations(world){
+    const list=$('#locationList');list.replaceChildren();
+    for(const worldScene of world.scenes()){
+        const data=sceneMeta(world,worldScene.id);
+        const button=document.createElement('button');button.className='loc';button.type='button';button.dataset.scene=worldScene.id;
+        const img=document.createElement('img');img.src=data.image;img.alt='';
+        const text=document.createElement('span');text.className='loctext';
+        const name=document.createElement('span');name.className='locname';name.textContent=data.title;
+        const meta=document.createElement('span');meta.className='locmeta';meta.textContent=data.subtitle;
+        text.append(name,meta);button.append(img,text);list.append(button);
+    }
+}
+function presentationState(){return {motion}}
 
 async function boot(){
     const world=await loadWorld();
     const gear=new DimensionGear();
     const agendas=new AgendaBook();
     const entities=new EntityRegistry(world);
+    const player=new PlayerState({world,start:GAME_START});
+    player.setInteraction('STARTUP');
     agendas.register(RIONNE_AGENDA);agendas.register(BARMAID_AGENDA);
     entities.register(RIONNE);entities.register(BARMAID);
     const navigator=new Navigator({world,entities});
     const simulation=new Simulation({gear,entities,agendas,navigator});
     simulation.initialize();
-    const saves=new SaveSystem({gear,entities});
+    const saves=new SaveSystem({gear,entities,player});
 
     function updateClockLocal(){const el=$('#worldTimeReadout');if(el)el.textContent=`WORLD TIME · ${gear.format()}`}
+    function openMenu(){page('mainPage');updateClockLocal();player.setInteraction('MENU');overlay.classList.add('open')}
+    function closeMenu(){overlay.classList.remove('open');player.setInteraction('FREE')}
+    function openLocationPreview(sceneId){
+        const destination=world.defaultLocationForScene(sceneId);
+        if(!destination) return;
+        const route=navigator.routeLocations(player.location,destination);
+        if(!route){say('That place is not reachable from here.');return;}
+        targetLocation=destination;
+        const data=sceneMeta(world,sceneId);
+        $('#previewImg').src=data.image;$('#previewTitle').textContent=data.title;$('#previewSub').textContent=data.subtitle;preview.classList.add('open');
+    }
+    function travelToTarget(){
+        if(!targetLocation)return;
+        const route=navigator.routeLocations(player.location,targetLocation);
+        if(!route){say('That place is not reachable from here.');return;}
+        player.setInteraction('TRAVEL');fade.classList.add('on');
+        setTimeout(()=>{
+            player.moveTo(targetLocation);targetLocation=null;renderPlayerScene(world,player);preview.classList.remove('open');overlay.classList.remove('open');
+            requestAnimationFrame(()=>requestAnimationFrame(()=>{fade.classList.remove('on');player.setInteraction('FREE')}));
+        },720);
+    }
+
     window.updateClock=updateClockLocal;
-    updateClockLocal();showScene(currentScene);
+    renderLocations(world);updateClockLocal();renderPlayerScene(world,player);
 
     welcome.addEventListener('pointerup',()=>{
         if(startupLeaving)return;startupLeaving=true;startupBlack.classList.remove('reveal');startupBlack.classList.add('on');
         setTimeout(()=>welcome.classList.add('dismissed'),80);
-        setTimeout(()=>{app.classList.remove('startup');startupBlack.classList.add('reveal');startupBlack.classList.remove('on')},1250);
+        setTimeout(()=>{app.classList.remove('startup');startupBlack.classList.add('reveal');startupBlack.classList.remove('on');player.setInteraction('FREE')},1250);
         setTimeout(()=>startupBlack.classList.remove('reveal'),2900);
     });
 
     $('#closeBtn').addEventListener('click',closeMenu);
     overlay.addEventListener('click',event=>{if(event.target===overlay)closeMenu()});
     $$('[data-page]').forEach(button=>button.addEventListener('click',()=>page(button.dataset.page)));
-    $$('.loc').forEach(button=>button.addEventListener('click',()=>{
-        targetScene=button.dataset.scene;const data=SCENES[targetScene];$('#previewImg').src=data.image;$('#previewTitle').textContent=data.title;$('#previewSub').textContent=data.sub;preview.classList.add('open');
-    }));
-    $('#previewBack').addEventListener('click',()=>preview.classList.remove('open'));
-    $('#goBtn').addEventListener('click',()=>{
-        fade.classList.add('on');
-        setTimeout(()=>{showScene(targetScene);preview.classList.remove('open');closeMenu();requestAnimationFrame(()=>requestAnimationFrame(()=>fade.classList.remove('on')))},720);
-    });
+    $('#locationList').addEventListener('click',event=>{const button=event.target.closest('.loc');if(button)openLocationPreview(button.dataset.scene)});
+    $('#previewBack').addEventListener('click',()=>{preview.classList.remove('open');targetLocation=null});
+    $('#goBtn').addEventListener('click',travelToTarget);
     $$('[data-action]').forEach(button=>button.addEventListener('click',()=>{
         if(button.dataset.action==='save'){saves.save(presentationState());say('World saved.')}
         if(button.dataset.action==='load'){
-            try{const state=saves.load();if(!state){say('No save data yet.');return}motion=state.motion!==false;document.documentElement.style.setProperty('--motion',motion?'1':'0');$('#motionBtn').textContent=`MENU MOTION · ${motion?'ON':'REDUCED'}`;showScene(SCENES[state.scene]?state.scene:'BERKLITH_TAVERN');updateClockLocal();closeMenu();say('Save loaded.')}catch(error){console.error(error);say('Save could not be loaded.')}
+            try{
+                const state=saves.load();if(!state){say('No save data yet.');return}
+                motion=state.motion!==false;document.documentElement.style.setProperty('--motion',motion?'1':'0');$('#motionBtn').textContent=`MENU MOTION · ${motion?'ON':'REDUCED'}`;
+                renderPlayerScene(world,player);updateClockLocal();closeMenu();say('Save loaded.');
+            }catch(error){console.error(error);say('Save could not be loaded.')}
         }
     }));
     $('#motionBtn').addEventListener('click',event=>{motion=!motion;document.documentElement.style.setProperty('--motion',motion?'1':'0');event.currentTarget.textContent=`MENU MOTION · ${motion?'ON':'REDUCED'}`;say(motion?'Full menu motion.':'Reduced menu motion.')});
@@ -78,7 +123,7 @@ async function boot(){
     app.addEventListener('pointermove',event=>{if(holding&&Math.hypot(event.clientX-holdX,event.clientY-holdY)>MOVE_LIMIT)clearHold()});
     app.addEventListener('pointerup',clearHold);app.addEventListener('pointercancel',clearHold);app.addEventListener('pointerleave',clearHold);
 
-    window.OVAD={world,gear,agendas,entities,navigator,simulation,saves};
+    window.OVAD={world,gear,agendas,entities,player,navigator,simulation,saves};
 }
 function updateClock(){window.updateClock?.()}
 
