@@ -6,21 +6,22 @@ import { PlayerState } from './core/player.js';
 import { Simulation } from './core/simulation.js';
 import { Navigator } from './core/navigation.js';
 import { SaveSystem } from './core/save.js';
+import { TravelSystem } from './core/travel.js';
 import { RIONNE, BARMAID, RIONNE_AGENDA, BARMAID_AGENDA } from './content/data.js';
-import { GAME_START, SCENE_PRESENTATION } from './content/game.js';
+import { GAME_START, SCENE_CONTENT } from './content/game.js';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
 const app=$('#app'), scene=$('#scene'), overlay=$('#overlay'), preview=$('#preview'), fade=$('#fade'), toast=$('#toast');
 const welcome=$('#welcomeScreen'), startupBlack=$('#startupBlack'), holdRing=$('#holdRing'), holdProgress=$('#holdProgress');
-let targetLocation=null, motion=true, toastTimer, startupLeaving=false;
+let targetScene=null, motion=true, toastTimer, startupLeaving=false;
 
 function say(message){toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),1800)}
 function page(id){$$('.page').forEach(node=>node.classList.toggle('active',node.id===id))}
 function sceneMeta(world, sceneId){
     const worldScene=world.scene(sceneId);
     if(!worldScene) throw new Error(`Unknown World scene: ${sceneId}`);
-    const presentation=SCENE_PRESENTATION[sceneId] || {};
+    const presentation=SCENE_CONTENT[sceneId] || {};
     return {
         title: presentation.title || sceneId.replaceAll('_',' '),
         subtitle: presentation.subtitle || '',
@@ -32,11 +33,12 @@ function renderPlayerScene(world, player){
     scene.style.backgroundImage=data.image?`url('${data.image}')`:'none';
     scene.dataset.scene=player.sceneId;
 }
-function renderLocations(world){
+function renderLocations(world, player){
     const list=$('#locationList');list.replaceChildren();
-    for(const worldScene of world.scenes()){
-        const data=sceneMeta(world,worldScene.id);
-        const button=document.createElement('button');button.className='loc';button.type='button';button.dataset.scene=worldScene.id;
+    for(const sceneId of player.discoveredScenes){
+        if(!world.hasScene(sceneId))continue;
+        const data=sceneMeta(world,sceneId);
+        const button=document.createElement('button');button.className='loc';button.type='button';button.dataset.scene=sceneId;
         const img=document.createElement('img');img.src=data.image;img.alt='';
         const text=document.createElement('span');text.className='loctext';
         const name=document.createElement('span');name.className='locname';name.textContent=data.title;
@@ -58,33 +60,29 @@ async function boot(){
     const navigator=new Navigator({world,entities});
     const simulation=new Simulation({gear,entities,agendas,navigator});
     simulation.initialize();
+    const travel=new TravelSystem({world,player});
     const saves=new SaveSystem({gear,entities,player});
 
     function updateClockLocal(){const el=$('#worldTimeReadout');if(el)el.textContent=`WORLD TIME · ${gear.format()}`}
     function openMenu(){page('mainPage');updateClockLocal();player.setInteraction('MENU');overlay.classList.add('open')}
     function closeMenu(){overlay.classList.remove('open');player.setInteraction('FREE')}
     function openLocationPreview(sceneId){
-        const destination=world.defaultLocationForScene(sceneId);
-        if(!destination) return;
-        const route=navigator.routeLocations(player.location,destination);
-        if(!route){say('That place is not reachable from here.');return;}
-        targetLocation=destination;
+        if(!travel.canTravelTo(sceneId))return;
+        targetScene=sceneId;
         const data=sceneMeta(world,sceneId);
         $('#previewImg').src=data.image;$('#previewTitle').textContent=data.title;$('#previewSub').textContent=data.subtitle;preview.classList.add('open');
     }
     function travelToTarget(){
-        if(!targetLocation)return;
-        const route=navigator.routeLocations(player.location,targetLocation);
-        if(!route){say('That place is not reachable from here.');return;}
+        if(!targetScene || !travel.canTravelTo(targetScene))return;
         player.setInteraction('TRAVEL');fade.classList.add('on');
         setTimeout(()=>{
-            player.moveTo(targetLocation);targetLocation=null;renderPlayerScene(world,player);preview.classList.remove('open');overlay.classList.remove('open');
+            travel.travelTo(targetScene);targetScene=null;renderPlayerScene(world,player);preview.classList.remove('open');overlay.classList.remove('open');
             requestAnimationFrame(()=>requestAnimationFrame(()=>{fade.classList.remove('on');player.setInteraction('FREE')}));
         },720);
     }
 
     window.updateClock=updateClockLocal;
-    renderLocations(world);updateClockLocal();renderPlayerScene(world,player);
+    renderLocations(world,player);updateClockLocal();renderPlayerScene(world,player);
 
     welcome.addEventListener('pointerup',()=>{
         if(startupLeaving)return;startupLeaving=true;startupBlack.classList.remove('reveal');startupBlack.classList.add('on');
@@ -97,7 +95,7 @@ async function boot(){
     overlay.addEventListener('click',event=>{if(event.target===overlay)closeMenu()});
     $$('[data-page]').forEach(button=>button.addEventListener('click',()=>page(button.dataset.page)));
     $('#locationList').addEventListener('click',event=>{const button=event.target.closest('.loc');if(button)openLocationPreview(button.dataset.scene)});
-    $('#previewBack').addEventListener('click',()=>{preview.classList.remove('open');targetLocation=null});
+    $('#previewBack').addEventListener('click',()=>{preview.classList.remove('open');targetScene=null});
     $('#goBtn').addEventListener('click',travelToTarget);
     $$('[data-action]').forEach(button=>button.addEventListener('click',()=>{
         if(button.dataset.action==='save'){saves.save(presentationState());say('World saved.')}
@@ -105,7 +103,7 @@ async function boot(){
             try{
                 const state=saves.load();if(!state){say('No save data yet.');return}
                 motion=state.motion!==false;document.documentElement.style.setProperty('--motion',motion?'1':'0');$('#motionBtn').textContent=`MENU MOTION · ${motion?'ON':'REDUCED'}`;
-                renderPlayerScene(world,player);updateClockLocal();closeMenu();say('Save loaded.');
+                renderPlayerScene(world,player);renderLocations(world,player);updateClockLocal();closeMenu();say('Save loaded.');
             }catch(error){console.error(error);say('Save could not be loaded.')}
         }
     }));
@@ -123,7 +121,7 @@ async function boot(){
     app.addEventListener('pointermove',event=>{if(holding&&Math.hypot(event.clientX-holdX,event.clientY-holdY)>MOVE_LIMIT)clearHold()});
     app.addEventListener('pointerup',clearHold);app.addEventListener('pointercancel',clearHold);app.addEventListener('pointerleave',clearHold);
 
-    window.OVAD={world,gear,agendas,entities,player,navigator,simulation,saves};
+    window.OVAD={world,gear,agendas,entities,player,navigator,simulation,travel,saves};
 }
 function updateClock(){window.updateClock?.()}
 
