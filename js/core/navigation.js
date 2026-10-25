@@ -8,6 +8,11 @@ export class Navigator {
         this.entities = entities;
     }
 
+    routeLocations(startLocation, destination) {
+        if (!this.world.has(startLocation) || !this.world.has(destination)) return null;
+        return this.world.findPath(startLocation, destination);
+    }
+
     route(entityId, destination) {
         const entity = this.entities.get(entityId);
 
@@ -16,7 +21,7 @@ export class Navigator {
             throw new Error(`Bad destination for ${entityId}`);
         }
 
-        const path = this.world.findPath(entity.state.location, destination);
+        const path = this.routeLocations(entity.state.location, destination);
 
         if (!path) {
             throw new Error(
