@@ -1,24 +1,23 @@
-OVA-D CLEAN ENGINE 0.3 — PRODUCTION SHELL
+OVA-Dimension Clean Engine 0.3.1 — Player World State
 
-COMPLETE / SELF-CONTAINED REPLACEMENT BUILD
+Foundation changes:
+- Player has authoritative World location + interaction state.
+- Game start is configured once in js/content/game.js.
+- Presentation renders the scene from Player State; no currentScene/showScene authority remains.
+- Locations UI is generated from scenes in world/world-stage.json.
+- Friendly scene labels are presentation metadata only and cannot create World locations.
+- Location travel validates a route through the shared World/Navigator graph.
+- Save/Load now serializes Player State alongside Dimension Gear and entities.
+- Service worker cache bumped and includes the new modules.
 
-FOUNDATION
-- Built directly from OVA-D Engine 0.2 Generic Navigation.
-- 0.2 World / Dimension Gear / Agenda / Entity / Navigation / Simulation responsibilities remain separate.
-- No old production world-time, Rionne navigation, Barmaid navigation, or entity-state code was copied in.
+Temporary start:
+BERKLITH_TAVERN / SPOT_01
+When HUB is authored in World Stage, GAME_START is the intended single configuration change.
 
-0.3 ADDS
-- Full-screen Berklith Tavern / Rionne Room presentation shell.
-- Known-good startup behavior and landscape guard, reimplemented around the clean engine.
-- Hold empty scene for 840 ms to open the menu.
-- Locations, Save, Load, Settings, Extra and Reset shell.
-- Generic save serialization for Dimension Gear + every registered entity.
-- Small development clock inside EXTRA > DEVELOPMENT.
-- PWA manifest, service worker, iOS standalone metadata and icons.
-- All required current scene/intro/icon assets included.
+Not implemented in this milestone:
+- witnessed/missed/off-screen autonomous presentation
+- character rendering/interaction
+- visual startup/location-preview polish
+- scene-bottom Dimension Gear test strip
 
-CLEANUP RULE
-The old 0.2 developer harness UI and its entity cards/log renderer are removed. The simulation log still exists internally for debugging but has no production UI authority. Presentation owns only presentation state.
-
-INSTALL
-Upload the complete contents of this ZIP to the GitHub Pages root, preserving folders. Then open the site in Safari and use Share > Add to Home Screen. Existing Home Screen installs may need to be removed/re-added if iOS retains old manifest behavior.
+The existing Extra development time controls remain available for engine testing.
