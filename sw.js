@@ -1,8 +1,8 @@
-const CACHE = 'ovad-clean-engine-031-player-state';
+const CACHE = 'ovad-clean-engine-032-world-contract';
 const CORE = [
   './','./index.html','./manifest.webmanifest','./css/ovad.css',
   './js/main.js','./js/core/world.js','./js/core/player.js','./js/core/dimension-gear.js','./js/core/agenda.js',
-  './js/core/entities.js','./js/core/navigation.js','./js/core/simulation.js','./js/core/save.js',
+  './js/core/entities.js','./js/core/navigation.js','./js/core/simulation.js','./js/core/travel.js','./js/core/save.js',
   './js/content/data.js','./js/content/game.js','./world/world-stage.json',
   './assets/berklith-tavern.jpg','./assets/rionnes-room.jpg','./assets/intro-landscape.jpg',
   './assets/intro-portrait.jpg','./assets/icon-192.png','./assets/icon-512.png'

@@ -1,22 +1,27 @@
-OVA-Dimension Clean Engine 0.3.1 — Player World State
+OVA-Dimension Clean Engine 0.3.2 — World / Game Data Contract
 
 Foundation changes:
-- Player has authoritative World location + interaction state.
-- Game start is configured once in js/content/game.js.
-- Presentation renders the scene from Player State; no currentScene/showScene authority remains.
-- Locations UI is generated from scenes in world/world-stage.json.
-- Friendly scene labels are presentation metadata only and cannot create World locations.
-- Location travel validates a route through the shared World/Navigator graph.
-- Save/Load now serializes Player State alongside Dimension Gear and entities.
-- Service worker cache bumped and includes the new modules.
+- Uses clean World Stage 0.8 production data: scenes, backgrounds, spots and connections only.
+- Player presence is scene-level. Player is not a physical entity and does not occupy SPOT_XX.
+- Character/NPC entities still use scene + spot for staging, agenda destinations and navigation.
+- Player State owns current scene, interaction state and discovered scenes.
+- Temporary New Game configuration lives in js/content/game.js and is ready to point to HUB later.
+- Scene player-facing names/subtitles live in game content; World Stage remains geography.
+- Locations renders Player-discovered scenes that exist in World; it does not enumerate all World scenes blindly.
+- Locations travel uses a dedicated scene-level TravelSystem, not entity Navigator or World spots.
+- Save/Load serializes the new Player State, including discovery.
+- Save schema/key and service-worker cache were bumped for 0.3.2.
 
-Temporary start:
-BERKLITH_TAVERN / SPOT_01
-When HUB is authored in World Stage, GAME_START is the intended single configuration change.
+Current temporary player state:
+- starts in BERKLITH_TAVERN
+- BERKLITH_TAVERN and RIONNES_ROOM begin discovered for current testing
 
 Not implemented in this milestone:
+- discovery events/content rules
+- player physical movement (not part of OVA-D's player model)
 - witnessed/missed/off-screen autonomous presentation
 - character rendering/interaction
+- interactable scene objects
 - visual startup/location-preview polish
 - scene-bottom Dimension Gear test strip
 
