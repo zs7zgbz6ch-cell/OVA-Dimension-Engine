@@ -1,167 +1,36 @@
 {
-  "version": "OVA-D_WORLD_STAGE_0.7",
-  "activeScene": "BERKLITH_TAVERN",
+  "version": "OVA-D_WORLD_STAGE_0.8",
   "scenes": {
     "BERKLITH_TAVERN": {
       "id": "BERKLITH_TAVERN",
       "background": "assets/berklith-tavern.jpg",
       "spots": [
-        {
-          "id": "SPOT_01",
-          "type": "transfer",
-          "x": 54.3,
-          "y": 67.5,
-          "scale": 25.5
-        },
-        {
-          "id": "SPOT_02",
-          "type": "transfer",
-          "x": 94.42051282051281,
-          "y": 94.89431643625193,
-          "scale": 68
-        },
-        {
-          "id": "SPOT_03",
-          "type": "waypoint",
-          "x": 49.8931623931624,
-          "y": 81.83563748079877,
-          "scale": 45
-        },
-        {
-          "id": "SPOT_04",
-          "type": "idle",
-          "x": 36.1,
-          "y": 68.4,
-          "scale": 26.5
-        },
-        {
-          "id": "SPOT_05",
-          "type": "idle",
-          "x": 27,
-          "y": 67.5,
-          "scale": 25.5
-        },
-        {
-          "id": "SPOT_06",
-          "type": "transfer",
-          "x": 30.1,
-          "y": 73,
-          "scale": 34.5
-        },
-        {
-          "id": "SPOT_07",
-          "type": "activity",
-          "x": 17.7,
-          "y": 98.3,
-          "scale": 57
-        }
-      ],
-      "selected": "SPOT_07",
-      "labels": true
+        { "id": "SPOT_01", "type": "transfer", "x": 54.3, "y": 67.5, "scale": 25.5 },
+        { "id": "SPOT_02", "type": "transfer", "x": 94.42051282051281, "y": 94.89431643625193, "scale": 68 },
+        { "id": "SPOT_03", "type": "waypoint", "x": 49.8931623931624, "y": 81.83563748079877, "scale": 45 },
+        { "id": "SPOT_04", "type": "idle", "x": 36.1, "y": 68.4, "scale": 26.5 },
+        { "id": "SPOT_05", "type": "idle", "x": 27, "y": 67.5, "scale": 25.5 },
+        { "id": "SPOT_06", "type": "transfer", "x": 30.1, "y": 73, "scale": 34.5 },
+        { "id": "SPOT_07", "type": "activity", "x": 17.7, "y": 98.3, "scale": 57 }
+      ]
     },
     "RIONNES_ROOM": {
       "id": "RIONNES_ROOM",
       "background": "assets/rionnes-room.jpg",
       "spots": [
-        {
-          "id": "SPOT_01",
-          "type": "transfer",
-          "x": 87.6,
-          "y": 107,
-          "scale": 107
-        },
-        {
-          "id": "SPOT_02",
-          "type": "idle",
-          "x": 47.8,
-          "y": 75.8,
-          "scale": 63
-        }
-      ],
-      "selected": "SPOT_02",
-      "labels": true
+        { "id": "SPOT_01", "type": "transfer", "x": 87.6, "y": 107, "scale": 107 },
+        { "id": "SPOT_02", "type": "idle", "x": 47.8, "y": 75.8, "scale": 63 }
+      ]
     }
   },
   "connections": [
-    {
-      "a": {
-        "scene": "RIONNES_ROOM",
-        "spot": "SPOT_01"
-      },
-      "b": {
-        "scene": "BERKLITH_TAVERN",
-        "spot": "SPOT_02"
-      }
-    },
-    {
-      "a": {
-        "scene": "RIONNES_ROOM",
-        "spot": "SPOT_01"
-      },
-      "b": {
-        "scene": "RIONNES_ROOM",
-        "spot": "SPOT_02"
-      }
-    },
-    {
-      "a": {
-        "scene": "BERKLITH_TAVERN",
-        "spot": "SPOT_03"
-      },
-      "b": {
-        "scene": "BERKLITH_TAVERN",
-        "spot": "SPOT_01"
-      }
-    },
-    {
-      "a": {
-        "scene": "BERKLITH_TAVERN",
-        "spot": "SPOT_03"
-      },
-      "b": {
-        "scene": "BERKLITH_TAVERN",
-        "spot": "SPOT_02"
-      }
-    },
-    {
-      "a": {
-        "scene": "BERKLITH_TAVERN",
-        "spot": "SPOT_03"
-      },
-      "b": {
-        "scene": "BERKLITH_TAVERN",
-        "spot": "SPOT_06"
-      }
-    },
-    {
-      "a": {
-        "scene": "BERKLITH_TAVERN",
-        "spot": "SPOT_06"
-      },
-      "b": {
-        "scene": "BERKLITH_TAVERN",
-        "spot": "SPOT_04"
-      }
-    },
-    {
-      "a": {
-        "scene": "BERKLITH_TAVERN",
-        "spot": "SPOT_06"
-      },
-      "b": {
-        "scene": "BERKLITH_TAVERN",
-        "spot": "SPOT_05"
-      }
-    },
-    {
-      "a": {
-        "scene": "BERKLITH_TAVERN",
-        "spot": "SPOT_07"
-      },
-      "b": {
-        "scene": "BERKLITH_TAVERN",
-        "spot": "SPOT_03"
-      }
-    }
+    { "a": { "scene": "RIONNES_ROOM", "spot": "SPOT_01" }, "b": { "scene": "BERKLITH_TAVERN", "spot": "SPOT_02" } },
+    { "a": { "scene": "RIONNES_ROOM", "spot": "SPOT_01" }, "b": { "scene": "RIONNES_ROOM", "spot": "SPOT_02" } },
+    { "a": { "scene": "BERKLITH_TAVERN", "spot": "SPOT_03" }, "b": { "scene": "BERKLITH_TAVERN", "spot": "SPOT_01" } },
+    { "a": { "scene": "BERKLITH_TAVERN", "spot": "SPOT_03" }, "b": { "scene": "BERKLITH_TAVERN", "spot": "SPOT_02" } },
+    { "a": { "scene": "BERKLITH_TAVERN", "spot": "SPOT_03" }, "b": { "scene": "BERKLITH_TAVERN", "spot": "SPOT_06" } },
+    { "a": { "scene": "BERKLITH_TAVERN", "spot": "SPOT_06" }, "b": { "scene": "BERKLITH_TAVERN", "spot": "SPOT_04" } },
+    { "a": { "scene": "BERKLITH_TAVERN", "spot": "SPOT_06" }, "b": { "scene": "BERKLITH_TAVERN", "spot": "SPOT_05" } },
+    { "a": { "scene": "BERKLITH_TAVERN", "spot": "SPOT_07" }, "b": { "scene": "BERKLITH_TAVERN", "spot": "SPOT_03" } }
   ]
 }
