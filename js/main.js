@@ -9,11 +9,13 @@ import { SaveSystem } from './core/save.js';
 import { TravelSystem } from './core/travel.js';
 import { RIONNE, BARMAID, RIONNE_AGENDA, BARMAID_AGENDA } from './content/data.js';
 import { GAME_START, SCENE_CONTENT } from './content/game.js';
+import { buildLabel } from './content/build.js';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
 const app=$('#app'), scene=$('#scene'), overlay=$('#overlay'), preview=$('#preview'), fade=$('#fade'), toast=$('#toast');
 const welcome=$('#welcomeScreen'), startupBlack=$('#startupBlack'), holdRing=$('#holdRing'), holdProgress=$('#holdProgress');
+const buildPlaque=$('#buildPlaque'), rotationMask=$('#rotationMask');
 let targetScene=null, motion=true, toastTimer, startupLeaving=false;
 
 function say(message){toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),1800)}
@@ -81,7 +83,7 @@ async function boot(){
         },720);
     }
 
-    window.updateClock=updateClockLocal;
+    buildPlaque.textContent=buildLabel();
     renderLocations(world,player);updateClockLocal();renderPlayerScene(world,player);
 
     welcome.addEventListener('pointerup',()=>{
@@ -113,17 +115,27 @@ async function boot(){
     $('#cancelReset').addEventListener('click',()=>$('#confirm').classList.remove('open'));
     $('#confirmReset').addEventListener('click',()=>{saves.clear();location.reload()});
 
-    let holdTimer=null,holdStart=0,holdX=0,holdY=0,holding=false;const HOLD_MS=840,MOVE_LIMIT=18;
+    let holdDelayTimer=null,holdTimer=null,holdStart=0,holdX=0,holdY=0,holding=false,ringActive=false;
+    const HOLD_DELAY_MS=180,HOLD_FILL_MS=500,MOVE_LIMIT=18;
     function blocked(target){return !!target.closest('button,.overlay,.preview,.confirm,.welcome-screen,.interactive,[data-interactive]')||overlay.classList.contains('open')||preview.classList.contains('open')||$('#confirm').classList.contains('open')||!welcome.classList.contains('dismissed')}
-    function clearHold(){holding=false;clearTimeout(holdTimer);holdTimer=null;holdRing.classList.remove('visible','complete');holdProgress.style.strokeDashoffset='100'}
-    function updateRing(){if(!holding)return;const progress=Math.max(0,Math.min(1,(performance.now()-holdStart)/HOLD_MS));holdProgress.style.strokeDashoffset=String(100-progress*100);if(progress<1)requestAnimationFrame(updateRing)}
-    app.addEventListener('pointerdown',event=>{if(event.pointerType==='mouse'&&event.button!==0)return;if(blocked(event.target))return;holding=true;holdStart=performance.now();holdX=event.clientX;holdY=event.clientY;holdRing.style.left=event.clientX+'px';holdRing.style.top=event.clientY+'px';holdRing.classList.add('visible');requestAnimationFrame(updateRing);holdTimer=setTimeout(()=>{if(!holding)return;holdRing.classList.add('complete');holding=false;setTimeout(()=>{clearHold();openMenu()},120)},HOLD_MS)});
+    function clearHold(){holding=false;ringActive=false;clearTimeout(holdDelayTimer);clearTimeout(holdTimer);holdDelayTimer=null;holdTimer=null;holdRing.classList.remove('visible','complete');holdProgress.style.strokeDashoffset='100'}
+    function updateRing(){if(!holding||!ringActive)return;const progress=Math.max(0,Math.min(1,(performance.now()-holdStart)/HOLD_FILL_MS));holdProgress.style.strokeDashoffset=String(100-progress*100);if(progress<1)requestAnimationFrame(updateRing)}
+    function beginRing(){if(!holding)return;ringActive=true;holdStart=performance.now();holdRing.classList.add('visible');requestAnimationFrame(updateRing);holdTimer=setTimeout(()=>{if(!holding||!ringActive)return;holdRing.classList.add('complete');holding=false;ringActive=false;holdTimer=null;requestAnimationFrame(()=>{holdRing.classList.remove('visible','complete');holdProgress.style.strokeDashoffset='100';openMenu()})},HOLD_FILL_MS)}
+    app.addEventListener('pointerdown',event=>{if(event.pointerType==='mouse'&&event.button!==0)return;if(blocked(event.target))return;clearHold();holding=true;holdX=event.clientX;holdY=event.clientY;holdRing.style.left=event.clientX+'px';holdRing.style.top=event.clientY+'px';holdDelayTimer=setTimeout(beginRing,HOLD_DELAY_MS)});
     app.addEventListener('pointermove',event=>{if(holding&&Math.hypot(event.clientX-holdX,event.clientY-holdY)>MOVE_LIMIT)clearHold()});
     app.addEventListener('pointerup',clearHold);app.addEventListener('pointercancel',clearHold);app.addEventListener('pointerleave',clearHold);
 
     window.OVAD={world,gear,agendas,entities,player,navigator,simulation,travel,saves};
 }
-function updateClock(){window.updateClock?.()}
+
+let rotationTimer=null;
+function stabilizeOrientation(){
+    rotationMask.classList.add('active');
+    clearTimeout(rotationTimer);
+    rotationTimer=setTimeout(()=>rotationMask.classList.remove('active'),320);
+}
+window.addEventListener('orientationchange',stabilizeOrientation);
+window.addEventListener('resize',()=>{clearTimeout(rotationTimer);rotationTimer=setTimeout(()=>rotationMask.classList.remove('active'),180)});
 
 document.addEventListener('gesturestart',event=>event.preventDefault(),{passive:false});
 document.addEventListener('contextmenu',event=>event.preventDefault());
