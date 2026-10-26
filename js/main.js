@@ -128,14 +128,55 @@ async function boot(){
     window.OVAD={world,gear,agendas,entities,player,navigator,simulation,travel,saves};
 }
 
-let rotationTimer=null;
+// Orientation belongs to the shell. It never changes Player or World state.
+// One settle controller owns both orientation and viewport resize notifications.
+let rotationSettleTimer = null;
+let rotationStartedAt = 0;
+let lastViewport = null;
+const ROTATION_QUIET_MS = 220;
+const ROTATION_MAX_MS = 1600;
+function viewportSize(){
+    const view = window.visualViewport;
+    return [Math.round(view?.width ?? innerWidth), Math.round(view?.height ?? innerHeight)];
+}
+function finishRotationWhenStable(){
+    const current = viewportSize();
+    const stable = lastViewport && current.every((value,index)=>Math.abs(value-lastViewport[index])<=1);
+    lastViewport = current;
+    if(stable || performance.now()-rotationStartedAt >= ROTATION_MAX_MS){
+        rotationMask.classList.remove('active');
+        rotationSettleTimer = null;
+        return;
+    }
+    rotationSettleTimer = setTimeout(finishRotationWhenStable, ROTATION_QUIET_MS);
+}
 function stabilizeOrientation(){
+    if(!rotationMask.classList.contains('active')) rotationStartedAt=performance.now();
     rotationMask.classList.add('active');
-    clearTimeout(rotationTimer);
-    rotationTimer=setTimeout(()=>rotationMask.classList.remove('active'),320);
+    lastViewport=null;
+    clearTimeout(rotationSettleTimer);
+    rotationSettleTimer=setTimeout(finishRotationWhenStable, ROTATION_QUIET_MS);
 }
 window.addEventListener('orientationchange',stabilizeOrientation);
-window.addEventListener('resize',()=>{clearTimeout(rotationTimer);rotationTimer=setTimeout(()=>rotationMask.classList.remove('active'),180)});
+window.addEventListener('resize',stabilizeOrientation);
+window.visualViewport?.addEventListener('resize',stabilizeOrientation);
+
+// Prevent Safari's double-tap text loupe on non-interactive presentation.
+// Keep ordinary controls and menu scrolling under their normal native handling.
+let previousSceneTap=0;
+document.addEventListener('touchend',event=>{
+    if(event.changedTouches.length!==1 || event.touches.length) return;
+    if(event.target.closest('button,input,textarea,select,a,.overlay,.preview,.confirm')){
+        previousSceneTap=0;
+        return;
+    }
+    const now=performance.now();
+    if(now-previousSceneTap<320) event.preventDefault();
+    previousSceneTap=now;
+},{passive:false});
+document.addEventListener('dblclick',event=>{
+    if(!event.target.closest('button,input,textarea,select,a,.overlay,.preview,.confirm')) event.preventDefault();
+});
 
 document.addEventListener('gesturestart',event=>event.preventDefault(),{passive:false});
 document.addEventListener('contextmenu',event=>event.preventDefault());
