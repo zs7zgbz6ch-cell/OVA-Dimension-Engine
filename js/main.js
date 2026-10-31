@@ -161,26 +161,5 @@ window.addEventListener('orientationchange',stabilizeOrientation);
 window.addEventListener('resize',stabilizeOrientation);
 window.visualViewport?.addEventListener('resize',stabilizeOrientation);
 
-// Prevent Safari's double-tap text loupe on non-interactive presentation.
-// Keep ordinary controls and menu scrolling under their normal native handling.
-let previousSceneTap=0;
-document.addEventListener('touchend',event=>{
-    if(event.changedTouches.length!==1 || event.touches.length) return;
-    if(event.target.closest('button,input,textarea,select,a,.overlay,.preview,.confirm')){
-        previousSceneTap=0;
-        return;
-    }
-    const now=performance.now();
-    if(now-previousSceneTap<320) event.preventDefault();
-    previousSceneTap=now;
-},{passive:false});
-document.addEventListener('dblclick',event=>{
-    if(!event.target.closest('button,input,textarea,select,a,.overlay,.preview,.confirm')) event.preventDefault();
-});
-
-document.addEventListener('gesturestart',event=>event.preventDefault(),{passive:false});
-document.addEventListener('contextmenu',event=>event.preventDefault());
-document.addEventListener('selectstart',event=>event.preventDefault());
-document.addEventListener('dragstart',event=>event.preventDefault());
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.error));
 boot().catch(error=>{console.error(error);welcome.classList.add('dismissed');say(`BOOT ERROR · ${error.message}`)});
