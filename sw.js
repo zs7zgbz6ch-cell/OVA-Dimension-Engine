@@ -1,4 +1,4 @@
-const CACHE = 'ovad-clean-engine-033a-orientation-touch';
+const CACHE = 'ovad-clean-engine-033b-gesture-audit';
 const CORE = [
   './','./index.html','./manifest.webmanifest','./css/ovad.css',
   './js/main.js','./js/core/world.js','./js/core/player.js','./js/core/dimension-gear.js','./js/core/agenda.js',
