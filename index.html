@@ -62,8 +62,7 @@
         <p class="menu-copy">Character art, discovered places and OVA extras will live here later.</p>
         <details class="dev-tools">
           <summary>DEVELOPMENT</summary>
-          <div id="worldTimeReadout" class="dev-readout">WORLD TIME</div>
-          <div class="dev-buttons"><button data-dev-min="1">+1 MIN</button><button data-dev-min="5">+5 MIN</button><button data-dev-min="30">+30 MIN</button><button data-dev-min="60">+60 MIN</button></div>
+          <p class="menu-copy">World time controls are available on the scene HUD.</p>
           <button class="subbtn reset" id="resetBtn" type="button">RESET PROTOTYPE</button>
         </details>
       </section>
@@ -83,7 +82,26 @@
   <div id="holdRing" class="hold-ring"><svg viewBox="0 0 36 36"><circle class="track" cx="18" cy="18" r="15.9155"/><circle id="holdProgress" class="progress" cx="18" cy="18" r="15.9155"/></svg></div>
   <div id="fade" class="fade"></div>
   <div id="toast" class="toast"></div>
-  <div id="buildPlaque" class="build-plaque" aria-label="Build version"></div>
+  <section id="devHud" class="dev-hud interactive" data-interactive aria-label="Development time controls">
+    <div id="devHudPanel" class="dev-hud-panel" hidden>
+      <div class="dev-hud-heading">DIMENSION GEAR · DEVELOPMENT</div>
+      <div id="devHudFullTime" class="dev-hud-full-time"></div>
+      <div class="dev-hud-buttons">
+        <button type="button" data-dev-min="1">+1m</button>
+        <button type="button" data-dev-min="5">+5m</button>
+        <button type="button" data-dev-min="30">+30m</button>
+        <button type="button" data-dev-min="60">+1h</button>
+        <button type="button" data-dev-min="720">+12h</button>
+      </div>
+      <div id="devEntityReadout" class="dev-hud-entities" aria-live="off"></div>
+    </div>
+    <div class="dev-hud-strip">
+      <button id="devHudToggle" class="dev-hud-toggle" type="button" aria-controls="devHudPanel" aria-expanded="false">
+        <span id="devHudTime" class="dev-hud-time">WORLD TIME</span><span id="devHudChevron" aria-hidden="true">▴</span>
+      </button>
+      <div id="buildPlaque" class="build-plaque" aria-label="Build version"></div>
+    </div>
+  </section>
 </div>
 
 <div id="rotationMask" class="rotation-mask" aria-hidden="true"></div>

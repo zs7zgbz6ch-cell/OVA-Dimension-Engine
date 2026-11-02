@@ -1,7 +1,7 @@
-const CACHE = 'ovad-clean-engine-033b-gesture-audit';
+const CACHE = 'ovad-clean-engine-033c-development-hud';
 const CORE = [
   './','./index.html','./manifest.webmanifest','./css/ovad.css',
-  './js/main.js','./js/core/world.js','./js/core/player.js','./js/core/dimension-gear.js','./js/core/agenda.js',
+  './js/main.js','./js/ui/dev-hud.js','./js/core/world.js','./js/core/player.js','./js/core/dimension-gear.js','./js/core/agenda.js',
   './js/core/entities.js','./js/core/navigation.js','./js/core/simulation.js','./js/core/travel.js','./js/core/save.js',
   './js/content/data.js','./js/content/game.js','./js/content/build.js','./world/world-stage.json',
   './assets/berklith-tavern.jpg','./assets/rionnes-room.jpg','./assets/intro-landscape.jpg',
