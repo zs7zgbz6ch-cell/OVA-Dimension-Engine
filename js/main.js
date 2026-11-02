@@ -9,13 +9,13 @@ import { SaveSystem } from './core/save.js';
 import { TravelSystem } from './core/travel.js';
 import { RIONNE, BARMAID, RIONNE_AGENDA, BARMAID_AGENDA } from './content/data.js';
 import { GAME_START, SCENE_CONTENT } from './content/game.js';
-import { buildLabel } from './content/build.js';
+import { mountDevHud } from './ui/dev-hud.js';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
 const app=$('#app'), scene=$('#scene'), overlay=$('#overlay'), preview=$('#preview'), fade=$('#fade'), toast=$('#toast');
 const welcome=$('#welcomeScreen'), startupBlack=$('#startupBlack'), holdRing=$('#holdRing'), holdProgress=$('#holdProgress');
-const buildPlaque=$('#buildPlaque'), rotationMask=$('#rotationMask');
+const rotationMask=$('#rotationMask');
 let targetScene=null, motion=true, toastTimer, startupLeaving=false;
 
 function say(message){toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),1800)}
@@ -65,8 +65,8 @@ async function boot(){
     const travel=new TravelSystem({world,player});
     const saves=new SaveSystem({gear,entities,player});
 
-    function updateClockLocal(){const el=$('#worldTimeReadout');if(el)el.textContent=`WORLD TIME · ${gear.format()}`}
-    function openMenu(){page('mainPage');updateClockLocal();player.setInteraction('MENU');overlay.classList.add('open')}
+    const devHud=mountDevHud({gear,entities,simulation,player,say});
+    function openMenu(){page('mainPage');devHud.render();player.setInteraction('MENU');overlay.classList.add('open')}
     function closeMenu(){overlay.classList.remove('open');player.setInteraction('FREE')}
     function openLocationPreview(sceneId){
         if(!travel.canTravelTo(sceneId))return;
@@ -83,8 +83,7 @@ async function boot(){
         },720);
     }
 
-    buildPlaque.textContent=buildLabel();
-    renderLocations(world,player);updateClockLocal();renderPlayerScene(world,player);
+    renderLocations(world,player);devHud.render();renderPlayerScene(world,player);
 
     welcome.addEventListener('pointerup',()=>{
         if(startupLeaving)return;startupLeaving=true;startupBlack.classList.remove('reveal');startupBlack.classList.add('on');
@@ -105,12 +104,11 @@ async function boot(){
             try{
                 const state=saves.load();if(!state){say('No save data yet.');return}
                 motion=state.motion!==false;document.documentElement.style.setProperty('--motion',motion?'1':'0');$('#motionBtn').textContent=`MENU MOTION · ${motion?'ON':'REDUCED'}`;
-                renderPlayerScene(world,player);renderLocations(world,player);updateClockLocal();closeMenu();say('Save loaded.');
+                renderPlayerScene(world,player);renderLocations(world,player);devHud.render();closeMenu();say('Save loaded.');
             }catch(error){console.error(error);say('Save could not be loaded.')}
         }
     }));
     $('#motionBtn').addEventListener('click',event=>{motion=!motion;document.documentElement.style.setProperty('--motion',motion?'1':'0');event.currentTarget.textContent=`MENU MOTION · ${motion?'ON':'REDUCED'}`;say(motion?'Full menu motion.':'Reduced menu motion.')});
-    $$('[data-dev-min]').forEach(button=>button.addEventListener('click',()=>{simulation.advance(Number(button.dataset.devMin));updateClockLocal()}));
     $('#resetBtn').addEventListener('click',()=>$('#confirm').classList.add('open'));
     $('#cancelReset').addEventListener('click',()=>$('#confirm').classList.remove('open'));
     $('#confirmReset').addEventListener('click',()=>{saves.clear();location.reload()});
