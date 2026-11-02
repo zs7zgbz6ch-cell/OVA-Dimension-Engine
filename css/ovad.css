@@ -15,3 +15,21 @@
 .rotation-mask,.rotation-mask.active{transition:none}
 /* Native selection and touch callouts are not part of the illustrated stage. */
 #app,#app *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}#app input,#app textarea,#app [contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+
+/* Development HUD: a single scene-level view of authoritative time and locations. */
+.dev-hud{position:absolute;z-index:1200;right:max(12px,env(safe-area-inset-right));bottom:max(9px,env(safe-area-inset-bottom));width:min(355px,calc(100vw - 32px));font-family:Georgia,'Times New Roman',serif}
+#app.startup .dev-hud{display:none}
+.dev-hud-strip{display:flex;align-items:center;justify-content:flex-end;gap:7px}
+.dev-hud-toggle,.dev-hud-panel{border:1px solid rgba(224,184,103,.32);background:rgba(12,7,4,.85);color:var(--cream);backdrop-filter:blur(6px)}
+.dev-hud-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:30px;border-radius:6px;padding:7px 10px;font:10px ui-monospace,monospace;letter-spacing:.02em;white-space:nowrap}
+.dev-hud-toggle span:last-child{color:var(--gold)}
+.dev-hud-panel{margin-bottom:7px;border-radius:6px;padding:12px}
+.dev-hud-panel[hidden]{display:none}
+.dev-hud-heading{font-size:9px;letter-spacing:.18em;color:var(--gold);margin-bottom:10px}
+.dev-hud-buttons{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.dev-hud-buttons button{border:1px solid rgba(224,184,103,.3);border-radius:3px;background:rgba(65,39,20,.6);color:var(--cream);font:10px ui-monospace,monospace;padding:9px 2px;min-height:34px}
+.dev-hud-buttons button:active{background:rgba(129,86,44,.75)}
+.dev-hud-entities{border-top:1px solid rgba(224,184,103,.18);margin-top:10px;padding-top:8px;color:var(--muted);font:9px/1.65 ui-monospace,monospace;overflow-wrap:anywhere}
+.dev-hud .build-plaque{position:static;flex-shrink:0;white-space:nowrap}
+@media(max-height:430px){.dev-hud-panel{padding:9px}.dev-hud-buttons button{min-height:30px;padding:6px 2px}}
+.dev-hud-full-time{font:10px ui-monospace,monospace;color:var(--cream);margin-bottom:10px}
