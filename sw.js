@@ -1,4 +1,4 @@
-const CACHE = 'ovad-clean-engine-033c-development-hud';
+const CACHE = 'ovad-clean-engine-034a-save-integrity';
 const CORE = [
   './','./index.html','./manifest.webmanifest','./css/ovad.css',
   './js/main.js','./js/ui/dev-hud.js','./js/core/world.js','./js/core/player.js','./js/core/dimension-gear.js','./js/core/agenda.js',
