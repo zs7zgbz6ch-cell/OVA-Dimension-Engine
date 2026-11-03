@@ -6,182 +6,79 @@ import { PlayerState } from './core/player.js';
 import { Simulation } from './core/simulation.js';
 import { Navigator } from './core/navigation.js';
 import { SaveSystem } from './core/save.js';
-import { MANUAL_SLOTS } from './core/save-slots.js';
 import { TravelSystem } from './core/travel.js';
 import { RIONNE, BARMAID, RIONNE_AGENDA, BARMAID_AGENDA } from './content/data.js';
-import { GAME_START, SCENE_CONTENT } from './content/game.js';
+import { GAME_START } from './content/game.js';
 import { mountDevHud } from './ui/dev-hud.js';
+import { mountMenu } from './ui/menu.js';
+import { mountSaveMenu } from './ui/save-menu.js';
+import { mountTravelView } from './ui/travel-view.js';
+import { mountHoldInput } from './ui/hold-input.js';
+import { renderLocations, renderPlayerScene } from './ui/scene-view.js';
 
 const $ = selector => document.querySelector(selector);
-const $$ = selector => [...document.querySelectorAll(selector)];
-const app=$('#app'), scene=$('#scene'), overlay=$('#overlay'), preview=$('#preview'), fade=$('#fade'), toast=$('#toast');
-const welcome=$('#welcomeScreen'), startupBlack=$('#startupBlack'), holdRing=$('#holdRing'), holdProgress=$('#holdProgress');
-const rotationMask=$('#rotationMask');
-let targetScene=null, motion=true, toastTimer, startupLeaving=false;
+const app = $('#app');
+const welcome = $('#welcomeScreen');
+const startupBlack = $('#startupBlack');
+const rotationMask = $('#rotationMask');
+let toastTimer;
 
-function say(message){toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),1800)}
-function page(id){$$('.page').forEach(node=>node.classList.toggle('active',node.id===id))}
-function sceneMeta(world, sceneId){
-    const worldScene=world.scene(sceneId);
-    if(!worldScene) throw new Error(`Unknown World scene: ${sceneId}`);
-    const presentation=SCENE_CONTENT[sceneId] || {};
-    return {
-        title: presentation.title || sceneId.replaceAll('_',' '),
-        subtitle: presentation.subtitle || '',
-        image: worldScene.background ? `./${worldScene.background.replace(/^\.\//,'')}` : ''
-    };
+function say(message) {
+    const toast = $('#toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
 }
-function renderPlayerScene(world, player){
-    const data=sceneMeta(world,player.sceneId);
-    scene.style.backgroundImage=data.image?`url('${data.image}')`:'none';
-    scene.dataset.scene=player.sceneId;
-}
-function renderLocations(world, player){
-    const list=$('#locationList');list.replaceChildren();
-    for(const sceneId of player.discoveredScenes){
-        if(!world.hasScene(sceneId))continue;
-        const data=sceneMeta(world,sceneId);
-        const button=document.createElement('button');button.className='loc';button.type='button';button.dataset.scene=sceneId;
-        const img=document.createElement('img');img.src=data.image;img.alt='';
-        const text=document.createElement('span');text.className='loctext';
-        const name=document.createElement('span');name.className='locname';name.textContent=data.title;
-        const meta=document.createElement('span');meta.className='locmeta';meta.textContent=data.subtitle;
-        text.append(name,meta);button.append(img,text);list.append(button);
-    }
-}
-function presentationState(){return {motion}}
 
-async function boot(){
-    const world=await loadWorld();
-    const gear=new DimensionGear();
-    const agendas=new AgendaBook();
-    const entities=new EntityRegistry(world);
-    const player=new PlayerState({world,start:GAME_START});
+async function boot() {
+    const world = await loadWorld();
+    const gear = new DimensionGear();
+    const agendas = new AgendaBook();
+    const entities = new EntityRegistry(world);
+    const player = new PlayerState({ world, start: GAME_START });
     player.setInteraction('STARTUP');
-    agendas.register(RIONNE_AGENDA);agendas.register(BARMAID_AGENDA);
-    entities.register(RIONNE);entities.register(BARMAID);
-    const navigator=new Navigator({world,entities});
-    const simulation=new Simulation({gear,entities,agendas,navigator});
+    agendas.register(RIONNE_AGENDA);
+    agendas.register(BARMAID_AGENDA);
+    entities.register(RIONNE);
+    entities.register(BARMAID);
+    const navigator = new Navigator({ world, entities });
+    const simulation = new Simulation({ gear, entities, agendas, navigator });
     simulation.initialize();
-    const travel=new TravelSystem({world,player});
-    const saves=new SaveSystem({gear,entities,player,agendas});
+    const travel = new TravelSystem({ world, player });
+    const saves = new SaveSystem({ gear, entities, player, agendas });
 
-    const devHud=mountDevHud({gear,entities,simulation,player,say});
-    let overwriteSlot=null;
-    const slotConfirm=$('#slotConfirm');
-    function refreshSlots(){
-        $('#legacyLoadBtn').hidden=!saves.hasLegacySave();
-        for(const [mode,listId] of [['save','saveSlotList'],['load','loadSlotList']]){
-            const list=$(`#${listId}`);list.replaceChildren();
-            for(const slot of MANUAL_SLOTS){
-                const button=document.createElement('button');button.type='button';button.className='save-slot';
-                button.dataset.slot=String(slot);button.dataset.slotAction=mode;
-                const info=document.createElement('span');info.className='save-slot-info';
-                const title=document.createElement('span');title.className='save-slot-name';title.textContent=`SLOT ${String(slot).padStart(2,'0')}`;
-                const detail=document.createElement('span');detail.className='save-slot-detail';
-                const action=document.createElement('span');action.className='save-slot-action';
-                try{
-                    const data=saves.inspectManual(slot);
-                    detail.textContent=data ? `${data.timeLabel} · ${sceneMeta(world,data.sceneId).title}` : 'EMPTY SLOT';
-                    action.textContent=mode==='save'?(data?'OVERWRITE':'SAVE'):'LOAD';
-                    if(mode==='load'&&!data)button.disabled=true;
-                }catch(error){
-                    console.error(error);detail.textContent='UNAVAILABLE / INVALID SAVE';
-                    action.textContent='—';button.disabled=true;
-                }
-                info.append(title,detail);button.append(info,action);list.append(button);
-            }
-        }
-    }
-    function saveToSlot(slot){
-        try{saves.saveManual(slot,presentationState());refreshSlots();say(`Saved to slot ${slot}.`)}
-        catch(error){console.error(error);say('Save failed · storage unavailable.')}
-    }
-    function loadFromSlot(slot){
-        try{
-            const state=saves.loadManual(slot);if(!state){say('Empty save slot.');refreshSlots();return}
-            motion=state.motion!==false;document.documentElement.style.setProperty('--motion',motion?'1':'0');
-            $('#motionBtn').textContent=`MENU MOTION · ${motion?'ON':'REDUCED'}`;
-            renderPlayerScene(world,player);renderLocations(world,player);devHud.render();closeMenu();say(`Loaded slot ${slot}.`);
-        }catch(error){console.error(error);refreshSlots();say('Save could not be loaded.')}
-    }
-    $('#legacyLoadBtn').addEventListener('click',()=>{
-        try{
-            const state=saves.load();if(!state){say('No previous save.');return}
-            motion=state.motion!==false;document.documentElement.style.setProperty('--motion',motion?'1':'0');
-            $('#motionBtn').textContent=`MENU MOTION · ${motion?'ON':'REDUCED'}`;
-            renderPlayerScene(world,player);renderLocations(world,player);devHud.render();closeMenu();say('Previous save loaded.');
-        }catch(error){console.error(error);say('Previous save could not be loaded.')}
+    const devHud = mountDevHud({ gear, entities, simulation, player, say });
+    const menu = mountMenu({ player, saves, devHud, say });
+    const saveMenu = mountSaveMenu({
+        saves, world, player, devHud, say, closeMenu: menu.closeMenu
     });
-    function closeSlotConfirm(){overwriteSlot=null;slotConfirm.classList.remove('open')}
-    $('#cancelSlotOverwrite').addEventListener('click',closeSlotConfirm);
-    $('#confirmSlotOverwrite').addEventListener('click',()=>{
-        const slot=overwriteSlot;closeSlotConfirm();if(slot!==null)saveToSlot(slot);
-    });
-    for(const listId of ['saveSlotList','loadSlotList']){
-        $(`#${listId}`).addEventListener('click',event=>{
-            const button=event.target.closest('[data-slot-action]');if(!button||button.disabled)return;
-            const slot=Number(button.dataset.slot);
-            if(button.dataset.slotAction==='load'){loadFromSlot(slot);return}
-            try{
-                if(saves.inspectManual(slot)){
-                    overwriteSlot=slot;$('#slotConfirmText').textContent=`Replace the existing save in slot ${slot}?`;
-                    slotConfirm.classList.add('open');
-                }else saveToSlot(slot);
-            }catch(error){console.error(error);say('Save slot unavailable.')}
-        });
-    }
-    function openMenu(){page('mainPage');devHud.render();player.setInteraction('MENU');overlay.classList.add('open')}
-    function closeMenu(){overlay.classList.remove('open');player.setInteraction('FREE')}
-    function openLocationPreview(sceneId){
-        if(!travel.canTravelTo(sceneId))return;
-        targetScene=sceneId;
-        const data=sceneMeta(world,sceneId);
-        $('#previewImg').src=data.image;$('#previewTitle').textContent=data.title;$('#previewSub').textContent=data.subtitle;preview.classList.add('open');
-    }
-    function travelToTarget(){
-        if(!targetScene || !travel.canTravelTo(targetScene))return;
-        player.setInteraction('TRAVEL');fade.classList.add('on');
-        setTimeout(()=>{
-            travel.travelTo(targetScene);targetScene=null;renderPlayerScene(world,player);preview.classList.remove('open');overlay.classList.remove('open');
-            requestAnimationFrame(()=>requestAnimationFrame(()=>{fade.classList.remove('on');player.setInteraction('FREE')}));
-        },720);
-    }
+    menu.setRefreshSlots(saveMenu.refreshSlots);
+    mountTravelView({ world, player, travel, say });
+    mountHoldInput({ app, player, openMenu: menu.openMenu, isBlocked: menu.isBlocked });
 
-    renderLocations(world,player);devHud.render();renderPlayerScene(world,player);
+    renderLocations(world, player);
+    renderPlayerScene(world, player);
+    devHud.render();
 
-    welcome.addEventListener('pointerup',()=>{
-        if(startupLeaving)return;startupLeaving=true;startupBlack.classList.remove('reveal');startupBlack.classList.add('on');
-        setTimeout(()=>welcome.classList.add('dismissed'),80);
-        setTimeout(()=>{app.classList.remove('startup');startupBlack.classList.add('reveal');startupBlack.classList.remove('on');player.setInteraction('FREE')},1250);
-        setTimeout(()=>startupBlack.classList.remove('reveal'),2900);
+    let startupLeaving = false;
+    welcome.addEventListener('pointerup', () => {
+        if (startupLeaving) return;
+        startupLeaving = true;
+        startupBlack.classList.remove('reveal');
+        startupBlack.classList.add('on');
+        setTimeout(() => welcome.classList.add('dismissed'), 80);
+        setTimeout(() => {
+            app.classList.remove('startup');
+            startupBlack.classList.add('reveal');
+            startupBlack.classList.remove('on');
+            player.setInteraction('FREE');
+        }, 1250);
+        setTimeout(() => startupBlack.classList.remove('reveal'), 2900);
     });
 
-    $('#closeBtn').addEventListener('click',closeMenu);
-    overlay.addEventListener('click',event=>{if(event.target===overlay)closeMenu()});
-    $$('[data-page]').forEach(button=>button.addEventListener('click',()=>{if(button.dataset.page==='savePage'||button.dataset.page==='loadPage')refreshSlots();page(button.dataset.page)}));
-    $('#locationList').addEventListener('click',event=>{const button=event.target.closest('.loc');if(button)openLocationPreview(button.dataset.scene)});
-    $('#previewBack').addEventListener('click',()=>{preview.classList.remove('open');targetScene=null});
-    $('#goBtn').addEventListener('click',travelToTarget);
-    $('#motionBtn').addEventListener('click',event=>{motion=!motion;document.documentElement.style.setProperty('--motion',motion?'1':'0');event.currentTarget.textContent=`MENU MOTION · ${motion?'ON':'REDUCED'}`;say(motion?'Full menu motion.':'Reduced menu motion.')});
-    $('#resetBtn').addEventListener('click',()=>$('#confirm').classList.add('open'));
-    $('#cancelReset').addEventListener('click',()=>$('#confirm').classList.remove('open'));
-    $('#confirmReset').addEventListener('click',()=>{
-        try{saves.clear();location.reload()}
-        catch(error){console.error(error);$('#confirm').classList.remove('open');say('Reset failed · storage unavailable.')}
-    });
-
-    let holdDelayTimer=null,holdTimer=null,holdStart=0,holdX=0,holdY=0,holding=false,ringActive=false;
-    const HOLD_DELAY_MS=180,HOLD_FILL_MS=500,MOVE_LIMIT=18;
-    function blocked(target){return !!target.closest('button,.overlay,.preview,.confirm,.welcome-screen,.interactive,[data-interactive]')||overlay.classList.contains('open')||preview.classList.contains('open')||$('#confirm').classList.contains('open')||slotConfirm.classList.contains('open')||!welcome.classList.contains('dismissed')}
-    function clearHold(){holding=false;ringActive=false;clearTimeout(holdDelayTimer);clearTimeout(holdTimer);holdDelayTimer=null;holdTimer=null;holdRing.classList.remove('visible','complete');holdProgress.style.strokeDashoffset='100'}
-    function updateRing(){if(!holding||!ringActive)return;const progress=Math.max(0,Math.min(1,(performance.now()-holdStart)/HOLD_FILL_MS));holdProgress.style.strokeDashoffset=String(100-progress*100);if(progress<1)requestAnimationFrame(updateRing)}
-    function beginRing(){if(!holding)return;ringActive=true;holdStart=performance.now();holdRing.classList.add('visible');requestAnimationFrame(updateRing);holdTimer=setTimeout(()=>{if(!holding||!ringActive)return;holdRing.classList.add('complete');holding=false;ringActive=false;holdTimer=null;requestAnimationFrame(()=>{holdRing.classList.remove('visible','complete');holdProgress.style.strokeDashoffset='100';openMenu()})},HOLD_FILL_MS)}
-    app.addEventListener('pointerdown',event=>{if(event.pointerType==='mouse'&&event.button!==0)return;if(blocked(event.target))return;clearHold();holding=true;holdX=event.clientX;holdY=event.clientY;holdRing.style.left=event.clientX+'px';holdRing.style.top=event.clientY+'px';holdDelayTimer=setTimeout(beginRing,HOLD_DELAY_MS)});
-    app.addEventListener('pointermove',event=>{if(holding&&Math.hypot(event.clientX-holdX,event.clientY-holdY)>MOVE_LIMIT)clearHold()});
-    app.addEventListener('pointerup',clearHold);app.addEventListener('pointercancel',clearHold);app.addEventListener('pointerleave',clearHold);
-
-    window.OVAD={world,gear,agendas,entities,player,navigator,simulation,travel,saves};
+    // Development-only inspection interface; not used by gameplay modules.
+    window.OVAD = { world, gear, agendas, entities, player, navigator, simulation, travel, saves };
 }
 
 // Orientation belongs to the shell. It never changes Player or World state.
@@ -191,31 +88,38 @@ let rotationStartedAt = 0;
 let lastViewport = null;
 const ROTATION_QUIET_MS = 220;
 const ROTATION_MAX_MS = 1600;
-function viewportSize(){
+
+function viewportSize() {
     const view = window.visualViewport;
     return [Math.round(view?.width ?? innerWidth), Math.round(view?.height ?? innerHeight)];
 }
-function finishRotationWhenStable(){
+function finishRotationWhenStable() {
     const current = viewportSize();
-    const stable = lastViewport && current.every((value,index)=>Math.abs(value-lastViewport[index])<=1);
+    const stable = lastViewport && current.every((value, index) => Math.abs(value - lastViewport[index]) <= 1);
     lastViewport = current;
-    if(stable || performance.now()-rotationStartedAt >= ROTATION_MAX_MS){
+    if (stable || performance.now() - rotationStartedAt >= ROTATION_MAX_MS) {
         rotationMask.classList.remove('active');
         rotationSettleTimer = null;
         return;
     }
     rotationSettleTimer = setTimeout(finishRotationWhenStable, ROTATION_QUIET_MS);
 }
-function stabilizeOrientation(){
-    if(!rotationMask.classList.contains('active')) rotationStartedAt=performance.now();
+function stabilizeOrientation() {
+    if (!rotationMask.classList.contains('active')) rotationStartedAt = performance.now();
     rotationMask.classList.add('active');
-    lastViewport=null;
+    lastViewport = null;
     clearTimeout(rotationSettleTimer);
-    rotationSettleTimer=setTimeout(finishRotationWhenStable, ROTATION_QUIET_MS);
+    rotationSettleTimer = setTimeout(finishRotationWhenStable, ROTATION_QUIET_MS);
 }
-window.addEventListener('orientationchange',stabilizeOrientation);
-window.addEventListener('resize',stabilizeOrientation);
-window.visualViewport?.addEventListener('resize',stabilizeOrientation);
+window.addEventListener('orientationchange', stabilizeOrientation);
+window.addEventListener('resize', stabilizeOrientation);
+window.visualViewport?.addEventListener('resize', stabilizeOrientation);
 
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.error));
-boot().catch(error=>{console.error(error);welcome.classList.add('dismissed');say(`BOOT ERROR · ${error.message}`)});
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.error));
+}
+boot().catch(error => {
+    console.error(error);
+    welcome.classList.add('dismissed');
+    say(`BOOT ERROR · ${error.message}`);
+});
