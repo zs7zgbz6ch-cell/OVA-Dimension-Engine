@@ -1,6 +1,6 @@
 export const BUILD_INFO = Object.freeze({
-    version: '0.3.3c',
-    name: 'DEVELOPMENT HUD'
+    version: '0.3.4a',
+    name: 'SAVE INTEGRITY'
 });
 
 export function buildLabel(){
