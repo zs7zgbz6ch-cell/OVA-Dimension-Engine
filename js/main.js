@@ -63,7 +63,7 @@ async function boot(){
     const simulation=new Simulation({gear,entities,agendas,navigator});
     simulation.initialize();
     const travel=new TravelSystem({world,player});
-    const saves=new SaveSystem({gear,entities,player});
+    const saves=new SaveSystem({gear,entities,player,agendas});
 
     const devHud=mountDevHud({gear,entities,simulation,player,say});
     function openMenu(){page('mainPage');devHud.render();player.setInteraction('MENU');overlay.classList.add('open')}
@@ -99,7 +99,10 @@ async function boot(){
     $('#previewBack').addEventListener('click',()=>{preview.classList.remove('open');targetScene=null});
     $('#goBtn').addEventListener('click',travelToTarget);
     $$('[data-action]').forEach(button=>button.addEventListener('click',()=>{
-        if(button.dataset.action==='save'){saves.save(presentationState());say('World saved.')}
+        if(button.dataset.action==='save'){
+            try{saves.save(presentationState());say('World saved.')}
+            catch(error){console.error(error);say('Save failed · storage unavailable.')}
+        }
         if(button.dataset.action==='load'){
             try{
                 const state=saves.load();if(!state){say('No save data yet.');return}
@@ -111,7 +114,10 @@ async function boot(){
     $('#motionBtn').addEventListener('click',event=>{motion=!motion;document.documentElement.style.setProperty('--motion',motion?'1':'0');event.currentTarget.textContent=`MENU MOTION · ${motion?'ON':'REDUCED'}`;say(motion?'Full menu motion.':'Reduced menu motion.')});
     $('#resetBtn').addEventListener('click',()=>$('#confirm').classList.add('open'));
     $('#cancelReset').addEventListener('click',()=>$('#confirm').classList.remove('open'));
-    $('#confirmReset').addEventListener('click',()=>{saves.clear();location.reload()});
+    $('#confirmReset').addEventListener('click',()=>{
+        try{saves.clear();location.reload()}
+        catch(error){console.error(error);$('#confirm').classList.remove('open');say('Reset failed · storage unavailable.')}
+    });
 
     let holdDelayTimer=null,holdTimer=null,holdStart=0,holdX=0,holdY=0,holding=false,ringActive=false;
     const HOLD_DELAY_MS=180,HOLD_FILL_MS=500,MOVE_LIMIT=18;
