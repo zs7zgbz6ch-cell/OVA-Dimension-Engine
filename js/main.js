@@ -6,6 +6,7 @@ import { PlayerState } from './core/player.js';
 import { Simulation } from './core/simulation.js';
 import { Navigator } from './core/navigation.js';
 import { SaveSystem } from './core/save.js';
+import { MANUAL_SLOTS } from './core/save-slots.js';
 import { TravelSystem } from './core/travel.js';
 import { RIONNE, BARMAID, RIONNE_AGENDA, BARMAID_AGENDA } from './content/data.js';
 import { GAME_START, SCENE_CONTENT } from './content/game.js';
@@ -66,6 +67,70 @@ async function boot(){
     const saves=new SaveSystem({gear,entities,player,agendas});
 
     const devHud=mountDevHud({gear,entities,simulation,player,say});
+    let overwriteSlot=null;
+    const slotConfirm=$('#slotConfirm');
+    function refreshSlots(){
+        $('#legacyLoadBtn').hidden=!saves.hasLegacySave();
+        for(const [mode,listId] of [['save','saveSlotList'],['load','loadSlotList']]){
+            const list=$(`#${listId}`);list.replaceChildren();
+            for(const slot of MANUAL_SLOTS){
+                const button=document.createElement('button');button.type='button';button.className='save-slot';
+                button.dataset.slot=String(slot);button.dataset.slotAction=mode;
+                const info=document.createElement('span');info.className='save-slot-info';
+                const title=document.createElement('span');title.className='save-slot-name';title.textContent=`SLOT ${String(slot).padStart(2,'0')}`;
+                const detail=document.createElement('span');detail.className='save-slot-detail';
+                const action=document.createElement('span');action.className='save-slot-action';
+                try{
+                    const data=saves.inspectManual(slot);
+                    detail.textContent=data ? `${data.timeLabel} · ${sceneMeta(world,data.sceneId).title}` : 'EMPTY SLOT';
+                    action.textContent=mode==='save'?(data?'OVERWRITE':'SAVE'):'LOAD';
+                    if(mode==='load'&&!data)button.disabled=true;
+                }catch(error){
+                    console.error(error);detail.textContent='UNAVAILABLE / INVALID SAVE';
+                    action.textContent='—';button.disabled=true;
+                }
+                info.append(title,detail);button.append(info,action);list.append(button);
+            }
+        }
+    }
+    function saveToSlot(slot){
+        try{saves.saveManual(slot,presentationState());refreshSlots();say(`Saved to slot ${slot}.`)}
+        catch(error){console.error(error);say('Save failed · storage unavailable.')}
+    }
+    function loadFromSlot(slot){
+        try{
+            const state=saves.loadManual(slot);if(!state){say('Empty save slot.');refreshSlots();return}
+            motion=state.motion!==false;document.documentElement.style.setProperty('--motion',motion?'1':'0');
+            $('#motionBtn').textContent=`MENU MOTION · ${motion?'ON':'REDUCED'}`;
+            renderPlayerScene(world,player);renderLocations(world,player);devHud.render();closeMenu();say(`Loaded slot ${slot}.`);
+        }catch(error){console.error(error);refreshSlots();say('Save could not be loaded.')}
+    }
+    $('#legacyLoadBtn').addEventListener('click',()=>{
+        try{
+            const state=saves.load();if(!state){say('No previous save.');return}
+            motion=state.motion!==false;document.documentElement.style.setProperty('--motion',motion?'1':'0');
+            $('#motionBtn').textContent=`MENU MOTION · ${motion?'ON':'REDUCED'}`;
+            renderPlayerScene(world,player);renderLocations(world,player);devHud.render();closeMenu();say('Previous save loaded.');
+        }catch(error){console.error(error);say('Previous save could not be loaded.')}
+    });
+    function closeSlotConfirm(){overwriteSlot=null;slotConfirm.classList.remove('open')}
+    $('#cancelSlotOverwrite').addEventListener('click',closeSlotConfirm);
+    $('#confirmSlotOverwrite').addEventListener('click',()=>{
+        const slot=overwriteSlot;closeSlotConfirm();if(slot!==null)saveToSlot(slot);
+    });
+    for(const listId of ['saveSlotList','loadSlotList']){
+        $(`#${listId}`).addEventListener('click',event=>{
+            const button=event.target.closest('[data-slot-action]');if(!button||button.disabled)return;
+            const slot=Number(button.dataset.slot);
+            if(button.dataset.slotAction==='load'){loadFromSlot(slot);return}
+            try{
+                if(saves.inspectManual(slot)){
+                    overwriteSlot=slot;$('#slotConfirmText').textContent=`Replace the existing save in slot ${slot}?`;
+                    slotConfirm.classList.add('open');
+                }else saveToSlot(slot);
+            }catch(error){console.error(error);say('Save slot unavailable.')}
+        });
+    }
     function openMenu(){page('mainPage');devHud.render();player.setInteraction('MENU');overlay.classList.add('open')}
     function closeMenu(){overlay.classList.remove('open');player.setInteraction('FREE')}
     function openLocationPreview(sceneId){
@@ -94,23 +159,10 @@ async function boot(){
 
     $('#closeBtn').addEventListener('click',closeMenu);
     overlay.addEventListener('click',event=>{if(event.target===overlay)closeMenu()});
-    $$('[data-page]').forEach(button=>button.addEventListener('click',()=>page(button.dataset.page)));
+    $$('[data-page]').forEach(button=>button.addEventListener('click',()=>{if(button.dataset.page==='savePage'||button.dataset.page==='loadPage')refreshSlots();page(button.dataset.page)}));
     $('#locationList').addEventListener('click',event=>{const button=event.target.closest('.loc');if(button)openLocationPreview(button.dataset.scene)});
     $('#previewBack').addEventListener('click',()=>{preview.classList.remove('open');targetScene=null});
     $('#goBtn').addEventListener('click',travelToTarget);
-    $$('[data-action]').forEach(button=>button.addEventListener('click',()=>{
-        if(button.dataset.action==='save'){
-            try{saves.save(presentationState());say('World saved.')}
-            catch(error){console.error(error);say('Save failed · storage unavailable.')}
-        }
-        if(button.dataset.action==='load'){
-            try{
-                const state=saves.load();if(!state){say('No save data yet.');return}
-                motion=state.motion!==false;document.documentElement.style.setProperty('--motion',motion?'1':'0');$('#motionBtn').textContent=`MENU MOTION · ${motion?'ON':'REDUCED'}`;
-                renderPlayerScene(world,player);renderLocations(world,player);devHud.render();closeMenu();say('Save loaded.');
-            }catch(error){console.error(error);say('Save could not be loaded.')}
-        }
-    }));
     $('#motionBtn').addEventListener('click',event=>{motion=!motion;document.documentElement.style.setProperty('--motion',motion?'1':'0');event.currentTarget.textContent=`MENU MOTION · ${motion?'ON':'REDUCED'}`;say(motion?'Full menu motion.':'Reduced menu motion.')});
     $('#resetBtn').addEventListener('click',()=>$('#confirm').classList.add('open'));
     $('#cancelReset').addEventListener('click',()=>$('#confirm').classList.remove('open'));
@@ -121,7 +173,7 @@ async function boot(){
 
     let holdDelayTimer=null,holdTimer=null,holdStart=0,holdX=0,holdY=0,holding=false,ringActive=false;
     const HOLD_DELAY_MS=180,HOLD_FILL_MS=500,MOVE_LIMIT=18;
-    function blocked(target){return !!target.closest('button,.overlay,.preview,.confirm,.welcome-screen,.interactive,[data-interactive]')||overlay.classList.contains('open')||preview.classList.contains('open')||$('#confirm').classList.contains('open')||!welcome.classList.contains('dismissed')}
+    function blocked(target){return !!target.closest('button,.overlay,.preview,.confirm,.welcome-screen,.interactive,[data-interactive]')||overlay.classList.contains('open')||preview.classList.contains('open')||$('#confirm').classList.contains('open')||slotConfirm.classList.contains('open')||!welcome.classList.contains('dismissed')}
     function clearHold(){holding=false;ringActive=false;clearTimeout(holdDelayTimer);clearTimeout(holdTimer);holdDelayTimer=null;holdTimer=null;holdRing.classList.remove('visible','complete');holdProgress.style.strokeDashoffset='100'}
     function updateRing(){if(!holding||!ringActive)return;const progress=Math.max(0,Math.min(1,(performance.now()-holdStart)/HOLD_FILL_MS));holdProgress.style.strokeDashoffset=String(100-progress*100);if(progress<1)requestAnimationFrame(updateRing)}
     function beginRing(){if(!holding)return;ringActive=true;holdStart=performance.now();holdRing.classList.add('visible');requestAnimationFrame(updateRing);holdTimer=setTimeout(()=>{if(!holding||!ringActive)return;holdRing.classList.add('complete');holding=false;ringActive=false;holdTimer=null;requestAnimationFrame(()=>{holdRing.classList.remove('visible','complete');holdProgress.style.strokeDashoffset='100';openMenu()})},HOLD_FILL_MS)}
