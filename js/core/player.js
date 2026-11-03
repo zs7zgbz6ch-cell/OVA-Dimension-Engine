@@ -54,16 +54,17 @@ export class PlayerState {
         };
     }
 
-    restore(snapshot) {
-        if (!snapshot || !this.world.hasScene(snapshot.scene)) throw new Error('Bad saved player scene.');
-        const discoveredScenes = uniqueSceneIds([...(snapshot.discoveredScenes || []), snapshot.scene]);
+    prepareRestore(snapshot) {
+        if (!snapshot || typeof snapshot !== 'object' || !this.world.hasScene(snapshot.scene)) throw new Error('Bad saved player scene.');
+        if (!Array.isArray(snapshot.discoveredScenes) || !snapshot.discoveredScenes.every(id => typeof id === 'string')) throw new Error('Bad saved discovered scenes.');
+        const discoveredScenes = uniqueSceneIds([...snapshot.discoveredScenes, snapshot.scene]);
         for (const sceneId of discoveredScenes) {
             if (!this.world.hasScene(sceneId)) throw new Error(`Bad saved discovered scene: ${sceneId}`);
         }
-        this.state = {
-            scene: snapshot.scene,
-            interaction: snapshot.interaction || 'FREE',
-            discoveredScenes
-        };
+        return { scene: snapshot.scene, interaction: 'FREE', discoveredScenes };
+    }
+
+    restore(snapshot) {
+        this.state = this.prepareRestore(snapshot);
     }
 }

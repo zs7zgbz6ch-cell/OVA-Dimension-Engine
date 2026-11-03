@@ -22,7 +22,8 @@ export class DimensionGear {
     }
 
     setEpochMinute(epochMinute) {
-        if (!Number.isInteger(epochMinute)) {
+        if (!Number.isSafeInteger(epochMinute) || !Number.isFinite(epochMinute * MINUTE_MS) ||
+            !Number.isFinite(new Date(epochMinute * MINUTE_MS).getTime())) {
             throw new Error("Invalid Dimension Gear time.");
         }
         this.date = new Date(epochMinute * MINUTE_MS);

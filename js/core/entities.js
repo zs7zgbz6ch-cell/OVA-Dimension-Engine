@@ -6,6 +6,7 @@ export class EntityRegistry {
     constructor(world) {
         this.world = world;
         this.entities = new Map();
+        this.initialStates = new Map();
     }
 
     register(definition) {
@@ -28,6 +29,7 @@ export class EntityRegistry {
         };
 
         this.entities.set(entity.id, entity);
+        this.initialStates.set(entity.id, { ...entity.state, location: copyLocation(entity.state.location) });
         return entity;
     }
 
@@ -82,18 +84,42 @@ export class EntityRegistry {
         }]));
     }
 
-    restore(snapshot) {
+    prepareRestore(snapshot, clock = null, agendas = null) {
+        if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) throw new Error('Bad saved entities.');
+        const prepared = new Map();
         for (const entity of this.all()) {
-            const state = snapshot[entity.id];
-            if (!state) throw new Error(`Missing saved entity: ${entity.id}`);
+            const saved = snapshot[entity.id];
+            let state;
+            if (saved === undefined) {
+                // New characters in older saves begin from their authored agenda at saved time.
+                const intent = clock && agendas?.resolve(entity.agendaId, clock);
+                const initial = this.initialStates.get(entity.id);
+                state = intent ? {
+                    location: copyLocation(intent.destination), agendaBlockId: intent.id,
+                    activity: intent.activity, sinceEpochMinute: clock.epochMinute
+                } : { ...initial, location: copyLocation(initial.location) };
+            } else {
+                if (!saved || typeof saved !== 'object' || !saved.location ||
+                    !this.world.has(saved.location) ||
+                    typeof saved.activity !== 'string' ||
+                    (saved.agendaBlockId != null && typeof saved.agendaBlockId !== 'string') ||
+                    (saved.sinceEpochMinute != null && (!Number.isSafeInteger(saved.sinceEpochMinute) ||
+                        (clock && saved.sinceEpochMinute > clock.epochMinute)))) {
+                    throw new Error(`Bad saved entity: ${entity.id}`);
+                }
+                state = {
+                    location: copyLocation(saved.location), agendaBlockId: saved.agendaBlockId ?? null,
+                    activity: saved.activity, sinceEpochMinute: saved.sinceEpochMinute ?? null
+                };
+            }
             if (!this.world.has(state.location)) throw new Error(`Bad saved location: ${entity.id}`);
-            entity.state = {
-                location: copyLocation(state.location),
-                agendaBlockId: state.agendaBlockId ?? null,
-                activity: state.activity,
-                sinceEpochMinute: state.sinceEpochMinute ?? null
-            };
+            prepared.set(entity.id, state);
         }
+        return prepared;
     }
 
+    restore(snapshot, clock = null, agendas = null) {
+        const prepared = this.prepareRestore(snapshot, clock, agendas);
+        for (const [id, state] of prepared) this.entities.get(id).state = state;
+    }
 }
