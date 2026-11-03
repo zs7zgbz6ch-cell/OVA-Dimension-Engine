@@ -1,6 +1,6 @@
 export const BUILD_INFO = Object.freeze({
-    version: '0.3.4b',
-    name: 'SAVE SLOT FOUNDATION'
+    version: '0.3.4c',
+    name: 'RPG SAVE MENUS'
 });
 
 export function buildLabel(){
