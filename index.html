@@ -36,8 +36,8 @@
         <div class="kicker">OVA-Dimension</div><h1 class="title">MENU</h1><div class="rule"></div>
         <div class="nav">
           <button type="button" data-page="locationsPage">LOCATIONS<small>Move through the places you know.</small></button>
-          <button type="button" data-action="save">SAVE<small>Store the current world state.</small></button>
-          <button type="button" data-action="load">LOAD<small>Restore your saved world state.</small></button>
+          <button type="button" data-page="savePage">SAVE<small>Store the current world state.</small></button>
+          <button type="button" data-page="loadPage">LOAD<small>Restore your saved world state.</small></button>
           <button type="button" data-page="settingsPage">SETTINGS<small>Presentation and interface options.</small></button>
           <button type="button" data-page="extraPage">EXTRA<small>Archive and development tools.</small></button>
         </div>
@@ -47,6 +47,21 @@
         <button class="back" type="button" data-page="mainPage">‹ MENU</button>
         <div class="kicker">Known places</div><h2 class="title">LOCATIONS</h2><div class="rule"></div>
         <div class="location-list" id="locationList"></div>
+      </section>
+
+      <section class="page" id="savePage">
+        <button class="back" type="button" data-page="mainPage">‹ MENU</button>
+        <div class="kicker">Manual checkpoints</div><h2 class="title">SAVE GAME</h2><div class="rule"></div>
+        <p class="menu-copy">Choose a slot to save your current world state.</p>
+        <div class="save-slot-list" id="saveSlotList"></div>
+      </section>
+
+      <section class="page" id="loadPage">
+        <button class="back" type="button" data-page="mainPage">‹ MENU</button>
+        <div class="kicker">Manual checkpoints</div><h2 class="title">LOAD GAME</h2><div class="rule"></div>
+        <p class="menu-copy">Choose a saved world to restore.</p>
+        <div class="save-slot-list" id="loadSlotList"></div>
+        <button class="subbtn" id="legacyLoadBtn" type="button" hidden>LOAD PREVIOUS SINGLE SAVE</button>
       </section>
 
       <section class="page" id="settingsPage">
@@ -77,6 +92,10 @@
 
   <div id="confirm" class="confirm interactive" data-interactive>
     <div class="confirm-card"><div class="kicker">Development</div><h2>RESET PROTOTYPE?</h2><p>This clears the clean-engine save and restarts the world.</p><div><button id="cancelReset">CANCEL</button><button id="confirmReset" class="danger">RESET</button></div></div>
+  </div>
+
+  <div id="slotConfirm" class="confirm interactive" data-interactive>
+    <div class="confirm-card"><div class="kicker">Save Game</div><h2>OVERWRITE SLOT?</h2><p id="slotConfirmText">Replace this manual save?</p><div><button id="cancelSlotOverwrite" type="button">CANCEL</button><button id="confirmSlotOverwrite" type="button" class="danger">OVERWRITE</button></div></div>
   </div>
 
   <div id="holdRing" class="hold-ring"><svg viewBox="0 0 36 36"><circle class="track" cx="18" cy="18" r="15.9155"/><circle id="holdProgress" class="progress" cx="18" cy="18" r="15.9155"/></svg></div>

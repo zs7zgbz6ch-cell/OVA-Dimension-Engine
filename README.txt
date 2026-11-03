@@ -1,3 +1,10 @@
+OVA-Dimension Clean Engine 0.3.4c — RPG SAVE MENUS
+
+Three manual slots exposed through the in-game Save and Load pages.
+Overwrite confirmation, empty slot handling, error feedback.
+No autosave schedule or title menu yet.
+Accepted baseline: 0.3.4b.
+
 OVA-Dimension Clean Engine 0.3.4b — SAVE SLOT FOUNDATION
 
 0.3.4a remains the accepted baseline until this build is tested.
