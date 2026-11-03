@@ -24,6 +24,20 @@ export function mountDevHud({ gear, entities, simulation, player, say }) {
         }
     }
 
+    function closePanel() {
+        panel.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+        chevron.textContent = '▴';
+    }
+
+    // Capture the outside tap before it reaches any underlying world control.
+    document.addEventListener('pointerdown', event => {
+        if (panel.hidden || panel.contains(event.target) || toggle.contains(event.target)) return;
+        closePanel();
+        event.preventDefault();
+        event.stopPropagation();
+    }, true);
+
     toggle.addEventListener('click', () => {
         const opening = panel.hidden;
         panel.hidden = !opening;
