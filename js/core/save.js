@@ -27,6 +27,8 @@ export class SaveSystem {
         localStorage.setItem(SAVE_KEY, data);
     }
 
+    hasLegacySave() { return localStorage.getItem(SAVE_KEY) !== null; }
+
     // Existing single-save API remains available for legacy 0.3.4a saves.
     load() {
         const raw = localStorage.getItem(SAVE_KEY);
@@ -63,6 +65,25 @@ export class SaveSystem {
         }
         return save.presentation && typeof save.presentation === 'object' && !Array.isArray(save.presentation)
             ? save.presentation : {};
+    }
+
+    inspectManual(slot) {
+        const raw = this.slots.readManual(slot);
+        if (raw === null) return null;
+        const data = JSON.parse(raw);
+        if (!data || data.version !== 3 || !data.player || !data.entities ||
+            !Number.isSafeInteger(data.epochMinute) ||
+            typeof data.player.scene !== 'string' ||
+            !this.player.world.hasScene(data.player.scene)) {
+            throw new Error('Invalid manual save metadata.');
+        }
+        const clock = new Date(data.epochMinute * 60000);
+        if (!Number.isFinite(clock.getTime())) throw new Error('Invalid save time.');
+        return {
+            sceneId: data.player.scene,
+            epochMinute: data.epochMinute,
+            timeLabel: `Y${clock.getUTCFullYear()-1999} · M${String(clock.getUTCMonth()+1).padStart(2,'0')} · D${String(clock.getUTCDate()).padStart(2,'0')} · ${String(clock.getUTCHours()).padStart(2,'0')}:${String(clock.getUTCMinutes()).padStart(2,'0')}`
+        };
     }
 
     saveManual(slot, presentation = {}) {
