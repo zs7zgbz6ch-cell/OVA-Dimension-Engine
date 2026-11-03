@@ -33,3 +33,13 @@
 .dev-hud .build-plaque{position:static;flex-shrink:0;white-space:nowrap}
 @media(max-height:430px){.dev-hud-panel{padding:9px}.dev-hud-buttons button{min-height:30px;padding:6px 2px}}
 .dev-hud-full-time{font:10px ui-monospace,monospace;color:var(--cream);margin-bottom:10px}
+
+/* 0.3.4c · Manual save slots. Presentation only; persistence stays in SaveSystem. */
+.save-slot-list{display:grid;gap:10px;margin-top:16px;max-height:52vh;overflow-y:auto;overscroll-behavior:contain}
+.save-slot{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;padding:15px 16px;text-align:left;border:1px solid rgba(214,168,105,.35);border-radius:8px;background:rgba(35,19,12,.72);color:#f6e5ca;font:inherit;cursor:pointer}
+.save-slot:disabled{opacity:.48;cursor:default}
+.save-slot:focus-visible{outline:2px solid #efca8b;outline-offset:2px}
+.save-slot-info{display:flex;flex-direction:column;gap:5px;min-width:0}
+.save-slot-name{font-size:14px;letter-spacing:.11em}
+.save-slot-detail{font-size:11px;line-height:1.5;opacity:.78;overflow-wrap:anywhere}
+.save-slot-action{flex:none;font-size:11px;letter-spacing:.1em;opacity:.9}
