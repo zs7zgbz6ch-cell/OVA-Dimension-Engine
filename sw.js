@@ -1,7 +1,7 @@
-const CACHE = 'ovad-clean-engine-034c-rpg-save-menus';
+const CACHE = 'ovad-clean-engine-034d-shell-safety';
 const CORE = [
   './','./index.html','./manifest.webmanifest','./css/ovad.css',
-  './js/main.js','./js/ui/dev-hud.js','./js/core/world.js','./js/core/player.js','./js/core/dimension-gear.js','./js/core/agenda.js',
+  './js/main.js','./js/ui/dev-hud.js','./js/ui/menu.js','./js/ui/save-menu.js','./js/ui/travel-view.js','./js/ui/hold-input.js','./js/ui/scene-view.js','./js/core/world.js','./js/core/player.js','./js/core/dimension-gear.js','./js/core/agenda.js',
   './js/core/entities.js','./js/core/navigation.js','./js/core/simulation.js','./js/core/travel.js','./js/core/save.js','./js/core/save-slots.js',
   './js/content/data.js','./js/content/game.js','./js/content/build.js','./world/world-stage.json',
   './assets/berklith-tavern.jpg','./assets/rionnes-room.jpg','./assets/intro-landscape.jpg',

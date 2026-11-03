@@ -1,50 +1,35 @@
-OVA-Dimension Clean Engine 0.3.4c — RPG SAVE MENUS
+OVA-Dimension — Clean Engine 0.3.4d · SHELL SAFETY
 
-Three manual slots exposed through the in-game Save and Load pages.
-Overwrite confirmation, empty slot handling, error feedback.
-No autosave schedule or title menu yet.
-Accepted baseline: 0.3.4b.
+Development milestone; accepted baseline remains 0.3.4c until iPhone testing.
 
-OVA-Dimension Clean Engine 0.3.4b — SAVE SLOT FOUNDATION
+Scope:
+- Extracted menu navigation, save-menu presentation, travel preview/transition,
+  hold gesture and scene rendering from js/main.js into focused js/ui modules.
+- Preserved 180 ms hold delay, 500 ms fill, and orientation settling behavior.
+- Hold/menu opening now requires player.isFree; closing the menu cannot override
+  an unrelated STARTUP or TRAVEL interaction state.
+- Travel fade and input state are released if a transition throws.
+- Expanded Development HUD closes on outside pointerdown, consuming that tap.
+- Development Reset Prototype continues to clear the legacy save only;
+  manual and autosave slots are intentionally retained.
+- Updated service worker cache list for the newly extracted modules.
 
-0.3.4a remains the accepted baseline until this build is tested.
+Not included:
+- No changes to game-world time, agendas, persistence schema, slot keys,
+  autosave scheduling, title menu, Travel hierarchy or service-worker strategy.
+- First-launch stale-build behavior is a known issue for the next milestone.
 
-Adds storage support for three independent manual slots and two rotating autosave snapshots.
-The existing single-save menu and legacy save key remain unchanged in this milestone.
-No autosave scheduling, slot menu, or title menu is enabled yet.
+Changed: js/main.js, js/ui/dev-hud.js, js/content/build.js, sw.js, README.txt
+New: js/ui/menu.js, js/ui/save-menu.js, js/ui/travel-view.js,
+     js/ui/hold-input.js, js/ui/scene-view.js, tests/shell-boundaries.mjs
+Deleted: none
 
-Run: node tests/save-integrity.mjs && node tests/save-slots.mjs
+Run: node tests/save-integrity.mjs
+     node tests/save-slots.mjs
+     node tests/save-menu-metadata.mjs
+     node tests/shell-boundaries.mjs
 
-OVA-Dimension Clean Engine 0.3.4a — SAVE INTEGRITY
-
-Based on accepted 0.3.3c Development HUD. This release ONLY hardens
-existing single-slot Save/Load. The agreed multi-slot and scheduled
-safe-boundary autosave design is NOT implemented yet.
-
-Changed files:
-  js/core/save.js          validate entire snapshot before commit; rollback
-  js/core/player.js        validate restore; discard transient interaction
-  js/core/entities.js      validate all entities; initialize new ones from
-                           authored agenda at saved time
-  js/core/dimension-gear.js reject invalid/out-of-range saved timestamps
-  js/main.js               handle save/reset storage errors
-  js/content/build.js      build label
-  sw.js                    versioned cache name (strategy unchanged)
-Added:
-  tests/save-integrity.mjs  automated regression checks (Node.js)
-
-No changes to CSS, assets, navigation, hold gesture, orientation, HUD,
-world-stage, agendas, or simulation behavior.
-
-Regression on iPhone:
-1. Install/upload all changed files together. Confirm 0.3.4a plaque.
-2. Save in Tavern, travel to Rionne's Room, load: Tavern restored.
-3. Advance time with HUD, save, advance more, load: clock and NPCs restored.
-4. Open/close menus, rotate, hold, and test HUD as in 0.3.3c.
-5. Reset Prototype and verify save is cleared; a subsequent Load says no data.
-6. Verify previously created 0.3.3c saves load, if present.
-
-Dev test: node --experimental-default-type=module tests/save-integrity.mjs
-
-IMPORTANT: This release does not yet autosave, provide three manual slots,
-or include a new title screen. Those remain separately planned milestones.
+iPhone checks: startup hold blocked during fade; hold gesture after startup;
+Save/Load all slots; travel/preview/fade; portrait/landscape transitions;
+HUD outside-tap dismissal (no underlying interaction); Development HUD time;
+Reset Prototype and saved slot retention.
