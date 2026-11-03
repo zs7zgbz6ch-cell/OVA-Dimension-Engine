@@ -1,3 +1,13 @@
+OVA-Dimension Clean Engine 0.3.4b — SAVE SLOT FOUNDATION
+
+0.3.4a remains the accepted baseline until this build is tested.
+
+Adds storage support for three independent manual slots and two rotating autosave snapshots.
+The existing single-save menu and legacy save key remain unchanged in this milestone.
+No autosave scheduling, slot menu, or title menu is enabled yet.
+
+Run: node tests/save-integrity.mjs && node tests/save-slots.mjs
+
 OVA-Dimension Clean Engine 0.3.4a — SAVE INTEGRITY
 
 Based on accepted 0.3.3c Development HUD. This release ONLY hardens
