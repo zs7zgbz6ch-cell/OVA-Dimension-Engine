@@ -1,5 +1,7 @@
 // Storage ownership only. The SaveSystem validates and applies snapshots.
 export const MANUAL_SLOTS = Object.freeze([1, 2, 3]);
+// Permanent compatibility namespace. Despite its historical name, this prefix must
+// NEVER change with a release: existing iPhone saves live under these keys.
 const PREFIX = 'ovad_clean_engine_v034b_';
 const AUTO_KEYS = [`${PREFIX}auto_0`, `${PREFIX}auto_1`];
 const HEAD_KEY = `${PREFIX}auto_head`;
