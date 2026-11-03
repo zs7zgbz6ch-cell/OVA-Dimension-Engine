@@ -33,3 +33,12 @@ iPhone checks: startup hold blocked during fade; hold gesture after startup;
 Save/Load all slots; travel/preview/fade; portrait/landscape transitions;
 HUD outside-tap dismissal (no underlying interaction); Development HUD time;
 Reset Prototype and saved slot retention.
+
+0.3.4e UPDATE RELIABILITY
+- Versioned module import map, CSS and World Stage JSON prevent the old 0.3.4d
+  service worker from matching stale unversioned resource URLs on first launch.
+- SW installs a complete immutable cache before activation and does not overwrite
+  individual app resources in the background. Offline navigation uses cached shell.
+- The existing v034b save key namespace is intentionally permanent; do not rename.
+- On a device already controlled by 0.3.4d, the initial launch may still briefly
+  use its old controller. Future updates use the 0.3.4e cache strategy.

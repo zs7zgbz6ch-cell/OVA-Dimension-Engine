@@ -1,45 +1,79 @@
-const CACHE = 'ovad-clean-engine-034d-shell-safety';
+// An installed build owns an immutable, complete asset cache. Never mix releases.
+const CACHE_PREFIX = 'ovad-clean-engine-';
+const CACHE = CACHE_PREFIX + '034e-update-reliability';
 const CORE = [
-  './','./index.html','./manifest.webmanifest','./css/ovad.css',
-  './js/main.js','./js/ui/dev-hud.js','./js/ui/menu.js','./js/ui/save-menu.js','./js/ui/travel-view.js','./js/ui/hold-input.js','./js/ui/scene-view.js','./js/core/world.js','./js/core/player.js','./js/core/dimension-gear.js','./js/core/agenda.js',
-  './js/core/entities.js','./js/core/navigation.js','./js/core/simulation.js','./js/core/travel.js','./js/core/save.js','./js/core/save-slots.js',
-  './js/content/data.js','./js/content/game.js','./js/content/build.js','./world/world-stage.json',
-  './assets/berklith-tavern.jpg','./assets/rionnes-room.jpg','./assets/intro-landscape.jpg',
-  './assets/intro-portrait.jpg','./assets/icon-192.png','./assets/icon-512.png'
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./css/ovad.css?v=034e",
+  "./js/content/build.js?v=034e",
+  "./js/content/data.js?v=034e",
+  "./js/content/game.js?v=034e",
+  "./js/core/agenda.js?v=034e",
+  "./js/core/dimension-gear.js?v=034e",
+  "./js/core/entities.js?v=034e",
+  "./js/core/navigation.js?v=034e",
+  "./js/core/player.js?v=034e",
+  "./js/core/save-slots.js?v=034e",
+  "./js/core/save.js?v=034e",
+  "./js/core/simulation.js?v=034e",
+  "./js/core/travel.js?v=034e",
+  "./js/core/world.js?v=034e",
+  "./js/main.js?v=034e",
+  "./js/ui/dev-hud.js?v=034e",
+  "./js/ui/hold-input.js?v=034e",
+  "./js/ui/menu.js?v=034e",
+  "./js/ui/save-menu.js?v=034e",
+  "./js/ui/scene-view.js?v=034e",
+  "./js/ui/travel-view.js?v=034e",
+  "./world/world-stage.json?v=034e",
+  "./assets/berklith-tavern.jpg",
+  "./assets/icon-192.png",
+  "./assets/icon-512.png",
+  "./assets/intro-landscape.jpg",
+  "./assets/intro-portrait.jpg",
+  "./assets/rionnes-room.jpg"
 ];
+const assetPaths = new Set(CORE.filter(path => path.includes('?v=034e')).map(path => new URL(path, self.registration.scope).pathname));
+
 self.addEventListener('install', event => {
-  self.skipWaiting();
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)));
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    try {
+      // Cache.addAll rejects if any required resource fails: no partial activation.
+      await cache.addAll(CORE.map(path => new Request(new URL(path, self.registration.scope), { cache: 'reload' })));
+    } catch (error) {
+      await caches.delete(CACHE);
+      throw error;
+    }
+    await self.skipWaiting();
+  })());
 });
+
 self.addEventListener('activate', event => {
-  event.waitUntil((async()=>{
+  event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)));
+    await Promise.all(keys.filter(key => key.startsWith(CACHE_PREFIX) && key !== CACHE).map(key => caches.delete(key)));
     await self.clients.claim();
   })());
 });
+
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
   const req = event.request;
-  if (req.mode === 'navigate' || req.destination === 'document') {
-    event.respondWith((async()=>{
+  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+  if (req.mode === 'navigate') {
+    event.respondWith((async () => {
       try {
-        const fresh = await fetch(req, {cache:'no-store'});
-        const cache = await caches.open(CACHE);
-        cache.put('./index.html', fresh.clone());
-        return fresh;
-      } catch {
-        return (await caches.match('./index.html')) || Response.error();
-      }
+        const response = await fetch(req, { cache: 'no-store' });
+        if (response.ok) return response;
+      } catch { /* offline fallback below */ }
+      return (await caches.open(CACHE)).match(new URL('./index.html', self.registration.scope)) || Response.error();
     })());
     return;
   }
-  event.respondWith((async()=>{
-    const cached = await caches.match(req);
-    const network = fetch(req).then(async fresh => {
-      if (fresh?.ok) (await caches.open(CACHE)).put(req, fresh.clone());
-      return fresh;
-    }).catch(()=>null);
-    return cached || await network || Response.error();
-  })());
+  const url = new URL(req.url);
+  if (url.searchParams.get('v') === '034e' && assetPaths.has(url.pathname)) {
+    // Installed resources are served from one completed cache generation.
+    event.respondWith((async () => (await caches.open(CACHE)).match(req) || fetch(req))());
+  }
 });
