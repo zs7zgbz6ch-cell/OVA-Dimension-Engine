@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { ENTITY_SPRITES } from '../js/content/game.js';
+const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
+const renderer = readFileSync(new URL('../js/ui/scene-view.js', import.meta.url), 'utf8');
+assert.match(sw, /const assetURLs = new Set\(CORE\.map\(/);
+assert.match(sw, /assetURLs\.has\(req\.url\)/);
+assert.doesNotMatch(sw, /assetPaths\.has\(/);
+assert.match(sw, /cache\.addAll\(CORE/);
+assert.equal(ENTITY_SPRITES.rionne, './assets/sprites/rionne-front.png');
+assert.equal(ENTITY_SPRITES.barmaid, './assets/sprites/barmaid-serving.png');
+assert.match(renderer, /ENTITY_SPRITES\[person\.assetFamily\]/);
+assert.doesNotMatch(renderer, /SPRITES\s*=\s*Object\.freeze/);
+assert.match(renderer, /if \(sprite\) img\.src = sprite/);
+console.log('PASS: generic content sprite resolution and exact precache routing');
