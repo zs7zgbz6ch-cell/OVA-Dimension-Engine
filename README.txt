@@ -1,3 +1,21 @@
+OVA-Dimension — Clean Engine 0.3.4h · CONTINUE & RECOVERY
+
+Current milestone:
+- The opening screen offers CONTINUE SAVED GAME when at least one autosave exists.
+- Continue restores the latest valid autosave; if corrupt, the older snapshot is tried.
+- If recovery fails, the opening screen remains usable; no saves are deleted.
+- Restored world location, entities, clock and presentation are rendered before the
+  established opening fade, and player input remains blocked until startup completes.
+- Tapping the opening screen still begins the prototype without loading an autosave.
+- Manual slots, autosave schedule, storage keys and Reset Prototype remain unchanged.
+
+Automated checks: node tests/continue-recovery.mjs, plus all existing tests/*.mjs.
+Device checks: first-launch build plaque; Continue after crossing 06:00/12:00/18:00/00:00;
+correct restored world time/location; opening fade and hold lock; existing manual saves;
+normal tap-to-begin and reset preservation.
+
+Previous milestone notes (historical; not current instructions):
+
 OVA-Dimension — Clean Engine 0.3.4g · SCHEDULED AUTOSAVES
 
 Checkpoint crossings at 00:00, 06:00, 12:00, 18:00 world time create one pending autosave, committed only after successful simulation advancement and a FREE player boundary. Two rotating autosave snapshots; manual slots unchanged. No title-screen Continue UI yet.
