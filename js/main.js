@@ -71,8 +71,16 @@ async function boot() {
     renderPlayerScene(world, player);
     devHud.render();
 
+    const continueButton = $('#continueBtn');
+    try {
+        continueButton.hidden = !saves.hasAutosave();
+    } catch (error) {
+        console.error('Autosave availability check failed:', error);
+        continueButton.hidden = true;
+    }
+
     let startupLeaving = false;
-    welcome.addEventListener('pointerup', () => {
+    function leaveStartup() {
         if (startupLeaving) return;
         startupLeaving = true;
         startupBlack.classList.remove('reveal');
@@ -86,6 +94,32 @@ async function boot() {
             autosave.flush();
         }, 1250);
         setTimeout(() => startupBlack.classList.remove('reveal'), 2900);
+    }
+
+    // Continue restores a complete validated snapshot before the opening fade.
+    // A corrupt latest snapshot is automatically retried against the older one.
+    continueButton.addEventListener('pointerup', event => event.stopPropagation());
+    continueButton.addEventListener('click', event => {
+        event.stopPropagation();
+        if (startupLeaving) return;
+        try {
+            const presentation = saves.loadAutosave();
+            if (presentation === null) throw new Error('No autosave is available.');
+            autosave.discardPending();
+            saveMenu.applyPresentation(presentation);
+            renderPlayerScene(world, player);
+            renderLocations(world, player);
+            devHud.render();
+            player.setInteraction('STARTUP');
+            leaveStartup();
+        } catch (error) {
+            console.error('Continue failed:', error);
+            say('Autosave unavailable · start normally or try again.');
+        }
+    });
+    welcome.addEventListener('pointerup', event => {
+        if (event.target.closest('#continueBtn')) return;
+        leaveStartup();
     });
 
     // Development-only inspection interface; not used by gameplay modules.
