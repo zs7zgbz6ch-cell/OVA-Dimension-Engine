@@ -43,3 +43,9 @@
 .save-slot-name{font-size:14px;letter-spacing:.11em}
 .save-slot-detail{font-size:11px;line-height:1.5;opacity:.78;overflow-wrap:anywhere}
 .save-slot-action{flex:none;font-size:11px;letter-spacing:.1em;opacity:.9}
+
+/* Opening-screen Continue: retains the original tap-to-begin presentation. */
+.welcome-actions{display:grid;justify-items:center;gap:15px}
+.welcome-continue{appearance:none;border:1px solid var(--gold);border-radius:4px;background:rgba(32,19,11,.83);color:#f4dba8;font:inherit;font-size:12px;letter-spacing:.18em;padding:12px 24px;cursor:pointer;touch-action:manipulation}
+.welcome-continue:focus-visible{outline:2px solid #f4dba8;outline-offset:4px}
+.welcome-continue[hidden]{display:none}
