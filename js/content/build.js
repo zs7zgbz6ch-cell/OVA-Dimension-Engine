@@ -1,6 +1,6 @@
 export const BUILD_INFO = Object.freeze({
-    version: '0.3.4e',
-    name: 'UPDATE RELIABILITY'
+    version: '0.3.4f',
+    name: 'SIMULATION SAFETY'
 });
 
 export function buildLabel(){
