@@ -1,4 +1,5 @@
 import { SaveSlots } from './save-slots.js';
+import { clockFromEpochMinute, formatClock } from './dimension-gear.js';
 // Keep the established storage key and v3 schema compatible with accepted 0.3.3c saves.
 const SAVE_KEY = 'ovad_clean_engine_save_v032';
 
@@ -77,12 +78,11 @@ export class SaveSystem {
             !this.player.world.hasScene(data.player.scene)) {
             throw new Error('Invalid manual save metadata.');
         }
-        const clock = new Date(data.epochMinute * 60000);
-        if (!Number.isFinite(clock.getTime())) throw new Error('Invalid save time.');
+        const clock = clockFromEpochMinute(data.epochMinute);
         return {
             sceneId: data.player.scene,
             epochMinute: data.epochMinute,
-            timeLabel: `Y${clock.getUTCFullYear()-1999} · M${String(clock.getUTCMonth()+1).padStart(2,'0')} · D${String(clock.getUTCDate()).padStart(2,'0')} · ${String(clock.getUTCHours()).padStart(2,'0')}:${String(clock.getUTCMinutes()).padStart(2,'0')}`
+            timeLabel: formatClock(clock)
         };
     }
 

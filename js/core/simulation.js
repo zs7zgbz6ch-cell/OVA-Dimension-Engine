@@ -1,18 +1,4 @@
-const MINUTE_MS = 60_000;
-
-function clockFromEpochMinute(epochMinute) {
-    const date = new Date(epochMinute * MINUTE_MS);
-
-    return {
-        year: date.getUTCFullYear() - 1999,
-        month: date.getUTCMonth() + 1,
-        day: date.getUTCDate(),
-        weekday: date.getUTCDay(),
-        hour: date.getUTCHours(),
-        minute: date.getUTCMinutes(),
-        epochMinute
-    };
-}
+import { clockFromEpochMinute } from './dimension-gear.js';
 
 function sameLocation(a, b) {
     return a.scene === b.scene && a.spot === b.spot;
@@ -32,16 +18,39 @@ export class Simulation {
     }
 
     advance(minutes) {
-        const change = this.gear.advance(minutes);
-
-        for (let offset = 1; offset <= minutes; offset += 1) {
-            this.evaluate(
-                clockFromEpochMinute(change.old.epochMinute + offset),
-                "TIME"
-            );
+        // Validate before touching any state. The gear owns time-range validation.
+        if (!Number.isSafeInteger(minutes) || minutes < 0) {
+            throw new Error('Invalid simulation advance.');
         }
+        const startMinute = this.gear.epochMinute;
+        const endMinute = startMinute + minutes;
+        if (!Number.isSafeInteger(endMinute)) throw new Error('Invalid simulation advance.');
+        // Fail before mutation if the target cannot be represented by Dimension Gear.
+        clockFromEpochMinute(endMinute);
 
-        return change;
+        const before = this.entities.snapshot();
+        const logLength = this.log.length;
+        const old = this.gear.snapshot();
+        try {
+            // Evaluate each minute before committing its clock. A failure anywhere
+            // restores the entire advance, including entity state and log entries.
+            for (let offset = 1; offset <= minutes; offset += 1) {
+                const clock = clockFromEpochMinute(startMinute + offset);
+                this.evaluate(clock, 'TIME');
+                this.gear.setEpochMinute(clock.epochMinute);
+            }
+            return { old, now: this.gear.snapshot() };
+        } catch (error) {
+            // Registry snapshots were captured from authoritative live entities.
+            // Restore directly to avoid applying new agenda defaults during rollback.
+            for (const entity of this.entities.all()) {
+                const state = before[entity.id];
+                entity.state = { ...state, location: { ...state.location } };
+            }
+            this.gear.setEpochMinute(startMinute);
+            this.log.length = logLength;
+            throw error;
+        }
     }
 
     evaluate(clock, reason) {
