@@ -17,3 +17,10 @@ export const SCENE_CONTENT = {
         subtitle: 'UPSTAIRS · PRIVATE QUARTERS'
     }
 };
+
+// Asset families are content configuration, not scene-renderer behavior.
+// Additional characters can reuse a family without changing rendering code.
+export const ENTITY_SPRITES = Object.freeze({
+    rionne: './assets/sprites/rionne-front.png',
+    barmaid: './assets/sprites/barmaid-serving.png'
+});
