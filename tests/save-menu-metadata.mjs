@@ -14,7 +14,7 @@ assert.equal(saves.inspectManual(1),null);
 saves.saveManual(1);
 const info=saves.inspectManual(1);
 assert.equal(info.sceneId,'A');
-assert.match(info.timeLabel,/Y1 · M01 · D01 · 06:55/);
+assert.match(info.timeLabel,/Y1 · M01 · D01 · SAT · 06:55/);
 player.moveToScene('B');
 saves.loadManual(1);
 assert.equal(player.sceneId,'A');
