@@ -42,3 +42,10 @@ Reset Prototype and saved slot retention.
 - The existing v034b save key namespace is intentionally permanent; do not rename.
 - On a device already controlled by 0.3.4d, the initial launch may still briefly
   use its old controller. Future updates use the 0.3.4e cache strategy.
+
+0.3.4f SIMULATION SAFETY
+- Simulation.advance validates its target and rolls back gear, entities, and log on failure.
+- Clock conversion/formatting centralized in Dimension Gear; manual slot metadata now includes weekday.
+- Reset confirmation explicitly states manual and autosave slots are preserved.
+- No scheduled autosave behavior added in this milestone.
+- Update the complete set of changed files before launching the PWA.
