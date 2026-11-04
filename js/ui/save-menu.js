@@ -128,5 +128,5 @@ export function mountSaveMenu({ saves, world, player, devHud, say, closeMenu, au
         applyPresentation({ motion });
         say(motion ? 'Full menu motion.' : 'Reduced menu motion.');
     });
-    return { refreshSlots, applyPresentation };
+    return { refreshSlots, applyPresentation, presentationState };
 }

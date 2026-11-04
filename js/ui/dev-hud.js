@@ -13,7 +13,10 @@ export function mountDevHud({ gear, entities, simulation, player, say }) {
 
     function render() {
         const time = gear.snapshot();
-        clock.textContent = `D${String(time.day).padStart(2, '0')} · ${String(time.hour).padStart(2, '0')}:${String(time.minute).padStart(2, '0')}`;
+        const day = String(time.day).padStart(2, '0');
+        const hour = String(time.hour).padStart(2, '0');
+        const minute = String(time.minute).padStart(2, '0');
+        clock.textContent = `D${day} · ${hour}:${minute}`;
         fullTime.textContent = gear.format();
         positions.replaceChildren();
         for (const entity of entities.all()) {
