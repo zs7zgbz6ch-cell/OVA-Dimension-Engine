@@ -25,5 +25,6 @@ const main = readFileSync(new URL('../js/main.js', import.meta.url), 'utf8');
 assert.match(html, /id="continueBtn"[^>]*hidden/);
 assert.match(main, /saves\.loadAutosave\(\)/);
 assert.match(main, /player\.setInteraction\('STARTUP'\);\s*leaveStartup\(\)/);
-assert.match(main, /if \(event\.target\.closest\('#continueBtn'\)\) return/);
+assert.match(main, /titleLoadBtn/);
+assert.doesNotMatch(main, /welcome\.addEventListener\('pointerup'/);
 console.log('PASS: continue availability, fallback, failure, startup gating');
