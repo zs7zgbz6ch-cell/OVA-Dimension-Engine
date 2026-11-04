@@ -1,4 +1,4 @@
-import { SCENE_CONTENT } from '../content/game.js';
+import { SCENE_CONTENT, ENTITY_SPRITES } from '../content/game.js';
 import { scenePresence } from '../core/presence.js';
 
 export function sceneMeta(world, sceneId) {
@@ -11,11 +11,6 @@ export function sceneMeta(world, sceneId) {
         image: worldScene.background ? `./${worldScene.background.replace(/^\.\//, '')}` : ''
     };
 }
-
-const SPRITES = Object.freeze({
-    rionne: './assets/sprites/rionne-front.png',
-    barmaid: './assets/sprites/barmaid-serving.png'
-});
 
 export function renderPlayerScene(world, player, entities) {
     const data = sceneMeta(world, player.sceneId);
@@ -42,7 +37,16 @@ export function renderPlayerScene(world, player, entities) {
         img.style.left = `${person.spot.x}%`;
         img.style.top = `${person.spot.y}%`;
         img.style.height = `${person.spot.scale}%`;
-        img.src = SPRITES[person.assetFamily] || './assets/sprites/rionne-front.png';
+        const sprite = ENTITY_SPRITES[person.assetFamily];
+        if (sprite) img.src = sprite;
+        else {
+            const fallback = document.createElement('span');
+            fallback.className = 'scene-actor-fallback';
+            fallback.textContent = '✦';
+            fallback.style.left = img.style.left;
+            fallback.style.top = img.style.top;
+            return fallback;
+        }
         img.addEventListener('error', () => {
             const fallback = document.createElement('span');
             fallback.className = 'scene-actor-fallback';
