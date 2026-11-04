@@ -20,6 +20,10 @@ export class SaveSlots {
         const order = head === '0' ? [0, 1] : head === '1' ? [1, 0] : [0, 1];
         return order.map(index => this.storage.getItem(AUTO_KEYS[index])).filter(raw => raw !== null);
     }
+    readAutosave(index) {
+        if (index !== 0 && index !== 1) throw new Error('Invalid autosave index.');
+        return this.readAutosaves()[index] ?? null;
+    }
     writeAutosave(serialized) {
         const head = this.storage.getItem(HEAD_KEY);
         const next = head === '0' ? 1 : 0;

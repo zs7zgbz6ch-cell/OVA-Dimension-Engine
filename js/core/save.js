@@ -95,6 +95,30 @@ export class SaveSystem {
         return raw === null ? null : this.restoreSerialized(raw);
     }
 
+    inspectAutosave(index) {
+        const raw = this.slots.readAutosave(index);
+        return raw === null ? null : this.inspectSnapshot(raw);
+    }
+
+    inspectSnapshot(raw) {
+        const data = JSON.parse(raw);
+        if (!data || data.version !== 3 || !Number.isSafeInteger(data.epochMinute) ||
+            typeof data.player?.scene !== 'string' ||
+            !this.player.world.hasScene(data.player.scene) || !data.entities) {
+            throw new Error('Invalid autosave metadata.');
+        }
+        return {
+            sceneId: data.player.scene,
+            epochMinute: data.epochMinute,
+            timeLabel: formatClock(clockFromEpochMinute(data.epochMinute))
+        };
+    }
+
+    loadAutosaveAt(index) {
+        const raw = this.slots.readAutosave(index);
+        return raw === null ? null : this.restoreSerialized(raw);
+    }
+
     saveAutosave(presentation = {}) {
         this.slots.writeAutosave(JSON.stringify(this.capture(presentation)));
     }
