@@ -55,8 +55,13 @@ export class PlayerState {
     }
 
     prepareRestore(snapshot) {
-        if (!snapshot || typeof snapshot !== 'object' || !this.world.hasScene(snapshot.scene)) throw new Error('Bad saved player scene.');
-        if (!Array.isArray(snapshot.discoveredScenes) || !snapshot.discoveredScenes.every(id => typeof id === 'string')) throw new Error('Bad saved discovered scenes.');
+        if (!snapshot || typeof snapshot !== 'object' || !this.world.hasScene(snapshot.scene)) {
+            throw new Error('Bad saved player scene.');
+        }
+        if (!Array.isArray(snapshot.discoveredScenes) ||
+            !snapshot.discoveredScenes.every(id => typeof id === 'string')) {
+            throw new Error('Bad saved discovered scenes.');
+        }
         const discoveredScenes = uniqueSceneIds([...snapshot.discoveredScenes, snapshot.scene]);
         for (const sceneId of discoveredScenes) {
             if (!this.world.hasScene(sceneId)) throw new Error(`Bad saved discovered scene: ${sceneId}`);

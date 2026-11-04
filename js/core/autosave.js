@@ -10,11 +10,12 @@ export function crossedAutosaveCheckpoint(startMinute, endMinute) {
 }
 
 export class AutosaveCoordinator {
-    constructor({ gear, player, saves, onError = () => {} }) {
+    constructor({ gear, player, saves, getPresentation = () => ({}), onError = () => {} }) {
         this.gear = gear;
         this.player = player;
         this.saves = saves;
         this.onError = onError;
+        this.getPresentation = getPresentation;
         this.pending = false;
     }
 
@@ -28,7 +29,7 @@ export class AutosaveCoordinator {
     flush() {
         if (!this.pending || !this.player.isFree) return false;
         try {
-            this.saves.saveAutosave();
+            this.saves.saveAutosave(this.getPresentation());
             this.pending = false;
             return true;
         } catch (error) {
