@@ -1,3 +1,35 @@
+OVA-Dimension — Clean Engine 0.3.4i · FINAL ENGINE POLISH
+
+Changes since accepted 0.3.4h:
+- Autosaves now capture the same menu-motion presentation preference as manual saves.
+  The autosave coordinator asks the UI for the current presentation at the safe
+  save boundary. Continue restores that preference through the existing path.
+- Service-worker offline and asset fallbacks now await cache.match() before
+  deciding whether to use the fallback. Cache generations remain immutable.
+- tools/stamp-release.mjs stamps the versioned resource URLs, service-worker
+  cache identifier and build plaque for future ZIP preparation. It is not a
+  runtime dependency: GitHub Pages and iPhone uploads remain plain files.
+- Long validation/readout lines in player.js and dev-hud.js were reformatted.
+- Regression coverage added for presentation capture and service-worker fallback.
+- No gameplay, Save/Load schema, storage key, autosave checkpoint, or art changes.
+
+Phone upload: application JavaScript files first, sw.js next, index.html last.
+Wait until all GitHub Pages deployments finish before launching the installed PWA.
+
+Suggested iPhone checks:
+1. First launch shows 0.3.4i · FINAL ENGINE POLISH.
+2. Set MENU MOTION to REDUCED, advance across a checkpoint, close and reopen.
+3. Choose CONTINUE SAVED GAME and verify MENU MOTION remains REDUCED.
+4. Verify manual Save/Load, travel, startup hold gating and HUD still work.
+5. Confirm existing manual saves and autosaves remain available.
+
+Project Foundation / roadmap: the Foundation document is not included in this
+archive. Update the canonical GitHub copy to record accepted 0.3.4b–0.3.4h
+save, shell and update milestones; 0.3.4i is pending device acceptance;
+0.4.1 Entity Presence is next after acceptance. Do not overwrite the existing
+Foundation document with a guessed reconstruction.
+
+--- Previous release notes ---
 OVA-Dimension — Clean Engine 0.3.4h · CONTINUE & RECOVERY
 
 Current milestone:
