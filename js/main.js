@@ -6,6 +6,7 @@ import { PlayerState } from './core/player.js';
 import { Simulation } from './core/simulation.js';
 import { Navigator } from './core/navigation.js';
 import { SaveSystem } from './core/save.js';
+import { AutosaveCoordinator } from './core/autosave.js';
 import { TravelSystem } from './core/travel.js';
 import { RIONNE, BARMAID, RIONNE_AGENDA, BARMAID_AGENDA } from './content/data.js';
 import { GAME_START } from './content/game.js';
@@ -48,10 +49,19 @@ async function boot() {
     const travel = new TravelSystem({ world, player });
     const saves = new SaveSystem({ gear, entities, player, agendas });
 
+    const autosave = new AutosaveCoordinator({
+        gear, player, saves,
+        onError(error) {
+            console.error('Autosave failed:', error);
+            say('Autosave failed · previous save preserved.');
+        }
+    });
+    simulation.onSuccessfulAdvance(result => autosave.onAdvance(result));
+
     const devHud = mountDevHud({ gear, entities, simulation, player, say });
-    const menu = mountMenu({ player, saves, devHud, say });
+    const menu = mountMenu({ player, saves, devHud, say, autosave });
     const saveMenu = mountSaveMenu({
-        saves, world, player, devHud, say, closeMenu: menu.closeMenu
+        saves, world, player, devHud, say, closeMenu: menu.closeMenu, autosave
     });
     menu.setRefreshSlots(saveMenu.refreshSlots);
     mountTravelView({ world, player, travel, say });
@@ -73,6 +83,7 @@ async function boot() {
             startupBlack.classList.add('reveal');
             startupBlack.classList.remove('on');
             player.setInteraction('FREE');
+            autosave.flush();
         }, 1250);
         setTimeout(() => startupBlack.classList.remove('reveal'), 2900);
     });
