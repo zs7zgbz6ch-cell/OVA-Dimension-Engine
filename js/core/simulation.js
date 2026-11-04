@@ -11,6 +11,12 @@ export class Simulation {
         this.agendas = agendas;
         this.navigator = navigator;
         this.log = [];
+        this.advanceListeners = new Set();
+    }
+
+    onSuccessfulAdvance(listener) {
+        this.advanceListeners.add(listener);
+        return () => this.advanceListeners.delete(listener);
     }
 
     initialize() {
@@ -39,7 +45,13 @@ export class Simulation {
                 this.evaluate(clock, 'TIME');
                 this.gear.setEpochMinute(clock.epochMinute);
             }
-            return { old, now: this.gear.snapshot() };
+            const result = { old, now: this.gear.snapshot() };
+            // Post-commit observers cannot roll back an already successful world advance.
+            for (const listener of this.advanceListeners) {
+                try { listener(result); }
+                catch (error) { console.error('Simulation post-commit observer failed:', error); }
+            }
+            return result;
         } catch (error) {
             // Registry snapshots were captured from authoritative live entities.
             // Restore directly to avoid applying new agenda defaults during rollback.
