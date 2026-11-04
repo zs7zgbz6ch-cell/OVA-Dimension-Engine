@@ -49,3 +49,28 @@
 .welcome-continue{appearance:none;border:1px solid var(--gold);border-radius:4px;background:rgba(32,19,11,.83);color:#f4dba8;font:inherit;font-size:12px;letter-spacing:.18em;padding:12px 24px;cursor:pointer;touch-action:manipulation}
 .welcome-continue:focus-visible{outline:2px solid #f4dba8;outline-offset:4px}
 .welcome-continue[hidden]{display:none}
+
+/* 0.3.4j — explicit title navigation and recovery. */
+.welcome-actions{gap:7px}
+.welcome-actions .welcome-continue{width:min(270px,66vw);padding:8px 18px;font-size:11px}
+.welcome-card{padding-top:18px;padding-bottom:17px}
+.welcome-line{margin-bottom:12px}
+.welcome-help{margin-bottom:12px}
+.overlay.title-mode{z-index:9400}
+.overlay.title-mode .dev-tools{display:none}
+.recovery-heading{margin-top:22px;margin-bottom:0}
+#autoSlotList{max-height:none}
+.new-game-card{position:relative;isolation:isolate;width:min(510px,82vw);overflow:hidden;text-align:center;padding:26px 28px}
+.new-game-card .kicker{position:relative;margin:0 0 16px}
+.new-game-card h2{position:relative;color:var(--cream);font-size:24px}
+.new-game-card p{position:relative;font-size:13px;line-height:1.6}
+.new-game-warning{border-top:1px solid rgba(224,184,103,.3);padding-top:13px;color:#e1b78d!important}
+.new-game-card>div:last-child{position:relative;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.new-game-card button{font-size:11px}
+.dimension-seal{position:absolute;width:125px;height:125px;top:-55px;left:calc(50% - 62px);border:1px solid rgba(224,184,103,.25);border-radius:50%;box-shadow:0 0 0 11px rgba(224,184,103,.06),0 0 0 23px rgba(224,184,103,.035);animation:dimensionSeal 1.2s ease-out both;pointer-events:none}
+@keyframes dimensionSeal{from{transform:rotate(-50deg) scale(.8);opacity:0}to{transform:rotate(0) scale(1);opacity:1}}
+@media(prefers-reduced-motion:reduce){.dimension-seal{animation:none}}
+:root[style*="--motion: 0"] .dimension-seal{animation:none}
+@media(max-height:430px){.welcome-card{padding:10px 20px}.welcome-title{font-size:25px}.welcome-help{display:none}.welcome-line{margin-bottom:9px}.welcome-actions{gap:5px}.welcome-actions .welcome-continue{padding:6px 12px;font-size:10px}.new-game-card{padding:15px 24px}.new-game-card h2{font-size:20px}.new-game-card p{margin:8px 0;font-size:11px}}
+
+#newGameConfirm{z-index:9600}
