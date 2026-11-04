@@ -3,7 +3,7 @@ import { sceneMeta, renderLocations, renderPlayerScene } from './scene-view.js';
 
 const $ = selector => document.querySelector(selector);
 
-export function mountSaveMenu({ saves, world, player, devHud, say, closeMenu }) {
+export function mountSaveMenu({ saves, world, player, devHud, say, closeMenu, autosave }) {
     const slotConfirm = $('#slotConfirm');
     let overwriteSlot = null;
     let motion = true;
@@ -62,6 +62,7 @@ export function mountSaveMenu({ saves, world, player, devHud, say, closeMenu }) 
         }
     }
     function finishLoad(state, message) {
+        autosave.discardPending();
         applyPresentation(state);
         renderPlayerScene(world, player);
         renderLocations(world, player);

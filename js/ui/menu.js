@@ -1,6 +1,6 @@
 const $ = selector => document.querySelector(selector);
 
-export function mountMenu({ player, saves, devHud, say }) {
+export function mountMenu({ player, saves, devHud, say, autosave }) {
     const overlay = $('#overlay');
     const slotConfirm = $('#slotConfirm');
     let refreshSlots = () => {};
@@ -19,6 +19,7 @@ export function mountMenu({ player, saves, devHud, say }) {
         // Never override STARTUP or TRAVEL from an unrelated UI callback.
         overlay.classList.remove('open');
         if (player.interaction === 'MENU') player.setInteraction('FREE');
+        autosave.flush();
     }
     $('#closeBtn').addEventListener('click', closeMenu);
     overlay.addEventListener('click', event => {
