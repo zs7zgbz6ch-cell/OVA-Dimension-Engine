@@ -4,12 +4,22 @@ export function mountMenu({ player, saves, devHud, say, autosave }) {
     const overlay = $('#overlay');
     const slotConfirm = $('#slotConfirm');
     let refreshSlots = () => {};
+    let titleMode = false;
 
     function page(id) {
         document.querySelectorAll('.page').forEach(node => node.classList.toggle('active', node.id === id));
     }
+    function openTitlePage(id) {
+        if (player.interaction !== 'STARTUP') return;
+        titleMode = true;
+        page(id);
+        if (id === 'loadPage') refreshSlots();
+        overlay.classList.add('open', 'title-mode');
+    }
     function openMenu() {
         if (!player.isFree) return;
+        titleMode = false;
+        overlay.classList.remove('title-mode');
         page('mainPage');
         devHud.render();
         player.setInteraction('MENU');
@@ -17,9 +27,11 @@ export function mountMenu({ player, saves, devHud, say, autosave }) {
     }
     function closeMenu() {
         // Never override STARTUP or TRAVEL from an unrelated UI callback.
-        overlay.classList.remove('open');
+        const wasTitle = titleMode;
+        overlay.classList.remove('open', 'title-mode');
+        titleMode = false;
         if (player.interaction === 'MENU') player.setInteraction('FREE');
-        autosave.flush();
+        if (!wasTitle) autosave.flush();
     }
     $('#closeBtn').addEventListener('click', closeMenu);
     overlay.addEventListener('click', event => {
@@ -27,6 +39,10 @@ export function mountMenu({ player, saves, devHud, say, autosave }) {
     });
     document.querySelectorAll('[data-page]').forEach(button => button.addEventListener('click', () => {
         if (button.dataset.page === 'savePage' || button.dataset.page === 'loadPage') refreshSlots();
+        if (titleMode && button.dataset.page === 'mainPage') {
+            closeMenu();
+            return;
+        }
         page(button.dataset.page);
     }));
     $('#resetBtn').addEventListener('click', () => $('#confirm').classList.add('open'));
@@ -44,7 +60,9 @@ export function mountMenu({ player, saves, devHud, say, autosave }) {
     });
     return {
         openMenu,
+        openTitlePage,
         closeMenu,
+        isTitleMode: () => titleMode,
         setRefreshSlots(callback) { refreshSlots = callback; },
         isBlocked() {
             return overlay.classList.contains('open') ||

@@ -3,7 +3,7 @@ import { sceneMeta, renderLocations, renderPlayerScene } from './scene-view.js';
 
 const $ = selector => document.querySelector(selector);
 
-export function mountSaveMenu({ saves, world, player, devHud, say, closeMenu, autosave }) {
+export function mountSaveMenu({ saves, world, player, devHud, say, closeMenu, autosave, isTitleMode = () => false, onTitleLoad = () => {} }) {
     const slotConfirm = $('#slotConfirm');
     let overwriteSlot = null;
     let motion = true;
@@ -16,6 +16,7 @@ export function mountSaveMenu({ saves, world, player, devHud, say, closeMenu, au
     }
     function refreshSlots() {
         $('#legacyLoadBtn').hidden = !saves.hasLegacySave();
+        refreshAutosaves();
         for (const [mode, listId] of [['save', 'saveSlotList'], ['load', 'loadSlotList']]) {
             const list = $(`#${listId}`);
             list.replaceChildren();
@@ -51,6 +52,40 @@ export function mountSaveMenu({ saves, world, player, devHud, say, closeMenu, au
             }
         }
     }
+    function refreshAutosaves() {
+        const list = $('#autoSlotList');
+        list.replaceChildren();
+        for (const index of [0, 1]) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'save-slot';
+            button.dataset.autoIndex = String(index);
+            const info = document.createElement('span');
+            info.className = 'save-slot-info';
+            const name = document.createElement('span');
+            name.className = 'save-slot-name';
+            name.textContent = index === 0 ? 'LATEST AUTOSAVE' : 'PREVIOUS AUTOSAVE';
+            const detail = document.createElement('span');
+            detail.className = 'save-slot-detail';
+            const action = document.createElement('span');
+            action.className = 'save-slot-action';
+            action.textContent = 'LOAD';
+            try {
+                const data = saves.inspectAutosave(index);
+                detail.textContent = data
+                    ? `${data.timeLabel} · ${sceneMeta(world, data.sceneId).title}`
+                    : 'EMPTY CHECKPOINT';
+                button.disabled = !data;
+            } catch (error) {
+                console.error('Autosave metadata unavailable:', error);
+                detail.textContent = 'UNAVAILABLE / INVALID AUTOSAVE';
+                button.disabled = true;
+            }
+            info.append(name, detail);
+            button.append(info, action);
+            list.append(button);
+        }
+    }
     function saveToSlot(slot) {
         try {
             saves.saveManual(slot, presentationState());
@@ -67,8 +102,13 @@ export function mountSaveMenu({ saves, world, player, devHud, say, closeMenu, au
         renderPlayerScene(world, player);
         renderLocations(world, player);
         devHud.render();
+        const fromTitle = isTitleMode();
         closeMenu();
-        say(message);
+        if (fromTitle) {
+            player.setInteraction('STARTUP');
+            onTitleLoad();
+        }
+        else say(message);
     }
     function loadFromSlot(slot) {
         try {
@@ -85,6 +125,20 @@ export function mountSaveMenu({ saves, world, player, devHud, say, closeMenu, au
             say('Save could not be loaded.');
         }
     }
+    $('#autoSlotList').addEventListener('click', event => {
+        const button = event.target.closest('[data-auto-index]');
+        if (!button || button.disabled) return;
+        const index = Number(button.dataset.autoIndex);
+        try {
+            const state = saves.loadAutosaveAt(index);
+            if (state === null) return;
+            finishLoad(state, 'Autosave restored.');
+        } catch (error) {
+            console.error('Autosave recovery failed:', error);
+            refreshSlots();
+            say('This autosave could not be restored.');
+        }
+    });
     $('#legacyLoadBtn').addEventListener('click', () => {
         try {
             const state = saves.load();
