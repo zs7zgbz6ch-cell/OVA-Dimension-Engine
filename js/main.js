@@ -63,6 +63,7 @@ async function boot() {
     const saveMenu = mountSaveMenu({
         saves, world, player, devHud, say, closeMenu: menu.closeMenu, autosave
     });
+    autosave.getPresentation = saveMenu.presentationState;
     menu.setRefreshSlots(saveMenu.refreshSlots);
     mountTravelView({ world, player, travel, say });
     mountHoldInput({ app, player, openMenu: menu.openMenu, isBlocked: menu.isBlocked });
