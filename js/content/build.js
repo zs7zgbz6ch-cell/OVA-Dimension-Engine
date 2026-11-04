@@ -1,6 +1,6 @@
 export const BUILD_INFO = Object.freeze({
-    version: '0.3.4k',
-    name: 'SAVE MENU RECOVERY'
+    version: '0.4.1a',
+    name: 'ENTITY PRESENCE'
 });
 
 export function buildLabel(){
