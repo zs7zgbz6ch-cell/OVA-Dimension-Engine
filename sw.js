@@ -1,33 +1,33 @@
 // An installed build owns an immutable, complete asset cache. Never mix releases.
 const CACHE_PREFIX = 'ovad-clean-engine-';
-const CACHE = CACHE_PREFIX + '034i-final-engine-polish';
+const CACHE = CACHE_PREFIX + '034j-save-flow-safety';
 const CORE = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./css/ovad.css?v=034i",
-  "./js/content/build.js?v=034i",
-  "./js/content/data.js?v=034i",
-  "./js/content/game.js?v=034i",
-  "./js/core/autosave.js?v=034i",
-  "./js/core/agenda.js?v=034i",
-  "./js/core/dimension-gear.js?v=034i",
-  "./js/core/entities.js?v=034i",
-  "./js/core/navigation.js?v=034i",
-  "./js/core/player.js?v=034i",
-  "./js/core/save-slots.js?v=034i",
-  "./js/core/save.js?v=034i",
-  "./js/core/simulation.js?v=034i",
-  "./js/core/travel.js?v=034i",
-  "./js/core/world.js?v=034i",
-  "./js/main.js?v=034i",
-  "./js/ui/dev-hud.js?v=034i",
-  "./js/ui/hold-input.js?v=034i",
-  "./js/ui/menu.js?v=034i",
-  "./js/ui/save-menu.js?v=034i",
-  "./js/ui/scene-view.js?v=034i",
-  "./js/ui/travel-view.js?v=034i",
-  "./world/world-stage.json?v=034i",
+  "./css/ovad.css?v=034j",
+  "./js/content/build.js?v=034j",
+  "./js/content/data.js?v=034j",
+  "./js/content/game.js?v=034j",
+  "./js/core/autosave.js?v=034j",
+  "./js/core/agenda.js?v=034j",
+  "./js/core/dimension-gear.js?v=034j",
+  "./js/core/entities.js?v=034j",
+  "./js/core/navigation.js?v=034j",
+  "./js/core/player.js?v=034j",
+  "./js/core/save-slots.js?v=034j",
+  "./js/core/save.js?v=034j",
+  "./js/core/simulation.js?v=034j",
+  "./js/core/travel.js?v=034j",
+  "./js/core/world.js?v=034j",
+  "./js/main.js?v=034j",
+  "./js/ui/dev-hud.js?v=034j",
+  "./js/ui/hold-input.js?v=034j",
+  "./js/ui/menu.js?v=034j",
+  "./js/ui/save-menu.js?v=034j",
+  "./js/ui/scene-view.js?v=034j",
+  "./js/ui/travel-view.js?v=034j",
+  "./world/world-stage.json?v=034j",
   "./assets/berklith-tavern.jpg",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
@@ -35,7 +35,7 @@ const CORE = [
   "./assets/intro-portrait.jpg",
   "./assets/rionnes-room.jpg"
 ];
-const assetPaths = new Set(CORE.filter(path => path.includes('?v=034i')).map(path => new URL(path, self.registration.scope).pathname));
+const assetPaths = new Set(CORE.filter(path => path.includes('?v=034j')).map(path => new URL(path, self.registration.scope).pathname));
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
@@ -73,7 +73,7 @@ self.addEventListener('fetch', event => {
     return;
   }
   const url = new URL(req.url);
-  if (url.searchParams.get('v') === '034i' && assetPaths.has(url.pathname)) {
+  if (url.searchParams.get('v') === '034j' && assetPaths.has(url.pathname)) {
     // Installed resources are served from one completed cache generation.
     event.respondWith((async () => (await (await caches.open(CACHE)).match(req)) || fetch(req))());
   }

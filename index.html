@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#050303">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./assets/icon-192.png">
-  <link rel="stylesheet" href="./css/ovad.css?v=034i">
+  <link rel="stylesheet" href="./css/ovad.css?v=034j">
   <title>OVA-Dimension</title>
 </head>
 <body>
@@ -24,8 +24,11 @@
       <div class="welcome-line">Somewhere, a door has opened.</div>
       <div class="welcome-help">Hold an empty part of a scene to open the menu.</div>
       <div class="welcome-actions">
-        <button id="continueBtn" class="welcome-continue" type="button" hidden>CONTINUE SAVED GAME</button>
-        <div id="welcomeBegin" class="welcome-tap">TAP TO BEGIN</div>
+        <button id="continueBtn" class="welcome-continue" type="button" hidden>CONTINUE</button>
+        <button id="newGameBtn" class="welcome-continue" type="button">NEW GAME</button>
+        <button id="titleLoadBtn" class="welcome-continue" type="button">LOAD GAME</button>
+        <button id="titleExtraBtn" class="welcome-continue" type="button">EXTRA</button>
+        <button id="titleSettingsBtn" class="welcome-continue" type="button">SETTINGS</button>
       </div>
     </div>
   </div>
@@ -64,6 +67,8 @@
         <div class="kicker">Manual checkpoints</div><h2 class="title">LOAD GAME</h2><div class="rule"></div>
         <p class="menu-copy">Choose a saved world to restore.</p>
         <div class="save-slot-list" id="loadSlotList"></div>
+        <div class="kicker recovery-heading">Autosave recovery</div>
+        <div class="save-slot-list" id="autoSlotList"></div>
         <button class="subbtn" id="legacyLoadBtn" type="button" hidden>LOAD PREVIOUS SINGLE SAVE</button>
       </section>
 
@@ -95,6 +100,17 @@
 
   <div id="confirm" class="confirm interactive" data-interactive>
     <div class="confirm-card"><div class="kicker">Development</div><h2>RESET PROTOTYPE?</h2><p>Restart the prototype world? Manual saves and autosaves will be kept.</p><div><button id="cancelReset">CANCEL</button><button id="confirmReset" class="danger">RESET</button></div></div>
+  </div>
+
+  <div id="newGameConfirm" class="confirm interactive" data-interactive role="dialog" aria-modal="true" aria-labelledby="newGameTitle">
+    <div class="confirm-card new-game-card">
+      <div class="dimension-seal" aria-hidden="true"></div>
+      <div class="kicker">A NEW DIMENSION AWAITS</div>
+      <h2 id="newGameTitle">Begin a New Game?</h2>
+      <p>A new game will begin at the dawn of Day 1. Enjoy the game and the choices you make ❤️</p>
+      <p class="new-game-warning">Be warned that a new game will overwrite previous autosaves.</p>
+      <div><button id="cancelNewGame" type="button">BACK TO TITLE</button><button id="confirmNewGame" type="button">NEW GAME</button></div>
+    </div>
   </div>
 
   <div id="slotConfirm" class="confirm interactive" data-interactive>
@@ -131,30 +147,30 @@
 <script type="importmap">
 {
   "imports": {
-    "./js/content/build.js": "./js/content/build.js?v=034i",
-    "./js/content/data.js": "./js/content/data.js?v=034i",
-    "./js/content/game.js": "./js/content/game.js?v=034i",
-    "./js/core/autosave.js": "./js/core/autosave.js?v=034i",
-    "./js/core/agenda.js": "./js/core/agenda.js?v=034i",
-    "./js/core/dimension-gear.js": "./js/core/dimension-gear.js?v=034i",
-    "./js/core/entities.js": "./js/core/entities.js?v=034i",
-    "./js/core/navigation.js": "./js/core/navigation.js?v=034i",
-    "./js/core/player.js": "./js/core/player.js?v=034i",
-    "./js/core/save-slots.js": "./js/core/save-slots.js?v=034i",
-    "./js/core/save.js": "./js/core/save.js?v=034i",
-    "./js/core/simulation.js": "./js/core/simulation.js?v=034i",
-    "./js/core/travel.js": "./js/core/travel.js?v=034i",
-    "./js/core/world.js": "./js/core/world.js?v=034i",
-    "./js/main.js": "./js/main.js?v=034i",
-    "./js/ui/dev-hud.js": "./js/ui/dev-hud.js?v=034i",
-    "./js/ui/hold-input.js": "./js/ui/hold-input.js?v=034i",
-    "./js/ui/menu.js": "./js/ui/menu.js?v=034i",
-    "./js/ui/save-menu.js": "./js/ui/save-menu.js?v=034i",
-    "./js/ui/scene-view.js": "./js/ui/scene-view.js?v=034i",
-    "./js/ui/travel-view.js": "./js/ui/travel-view.js?v=034i"
+    "./js/content/build.js": "./js/content/build.js?v=034j",
+    "./js/content/data.js": "./js/content/data.js?v=034j",
+    "./js/content/game.js": "./js/content/game.js?v=034j",
+    "./js/core/autosave.js": "./js/core/autosave.js?v=034j",
+    "./js/core/agenda.js": "./js/core/agenda.js?v=034j",
+    "./js/core/dimension-gear.js": "./js/core/dimension-gear.js?v=034j",
+    "./js/core/entities.js": "./js/core/entities.js?v=034j",
+    "./js/core/navigation.js": "./js/core/navigation.js?v=034j",
+    "./js/core/player.js": "./js/core/player.js?v=034j",
+    "./js/core/save-slots.js": "./js/core/save-slots.js?v=034j",
+    "./js/core/save.js": "./js/core/save.js?v=034j",
+    "./js/core/simulation.js": "./js/core/simulation.js?v=034j",
+    "./js/core/travel.js": "./js/core/travel.js?v=034j",
+    "./js/core/world.js": "./js/core/world.js?v=034j",
+    "./js/main.js": "./js/main.js?v=034j",
+    "./js/ui/dev-hud.js": "./js/ui/dev-hud.js?v=034j",
+    "./js/ui/hold-input.js": "./js/ui/hold-input.js?v=034j",
+    "./js/ui/menu.js": "./js/ui/menu.js?v=034j",
+    "./js/ui/save-menu.js": "./js/ui/save-menu.js?v=034j",
+    "./js/ui/scene-view.js": "./js/ui/scene-view.js?v=034j",
+    "./js/ui/travel-view.js": "./js/ui/travel-view.js?v=034j"
   }
 }
   </script>
-<script type="module" src="./js/main.js?v=034i"></script>
+<script type="module" src="./js/main.js?v=034j"></script>
 </body>
 </html>
