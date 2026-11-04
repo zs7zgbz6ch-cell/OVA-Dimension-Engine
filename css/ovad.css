@@ -74,3 +74,10 @@
 @media(max-height:430px){.welcome-card{padding:10px 20px}.welcome-title{font-size:25px}.welcome-help{display:none}.welcome-line{margin-bottom:9px}.welcome-actions{gap:5px}.welcome-actions .welcome-continue{padding:6px 12px;font-size:10px}.new-game-card{padding:15px 24px}.new-game-card h2{font-size:20px}.new-game-card p{margin:8px 0;font-size:11px}}
 
 #newGameConfirm{z-index:9600}
+
+/* Entity Presence: the art and foot-anchored sprites share a 1536:708 stage. */
+.scene{inset:0;background:none;display:grid;place-items:center;overflow:hidden}
+.scene-stage{position:relative;width:min(100vw,216.94915vh);aspect-ratio:1536/708;max-height:100%;background-position:center;background-size:100% 100%;background-repeat:no-repeat;overflow:hidden}
+.scene-actors{position:absolute;inset:0;pointer-events:none}
+.scene-actor{position:absolute;width:auto;max-width:none;transform:translate(-50%,-100%);transform-origin:50% 100%;object-fit:contain;pointer-events:none;user-select:none}
+.scene-actor-fallback{position:absolute;color:var(--gold);font-size:20px;pointer-events:none}
