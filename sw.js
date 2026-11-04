@@ -1,32 +1,33 @@
 // An installed build owns an immutable, complete asset cache. Never mix releases.
 const CACHE_PREFIX = 'ovad-clean-engine-';
-const CACHE = CACHE_PREFIX + '034f-simulation-safety';
+const CACHE = CACHE_PREFIX + '034g-scheduled-autosaves';
 const CORE = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./css/ovad.css?v=034f",
-  "./js/content/build.js?v=034f",
-  "./js/content/data.js?v=034f",
-  "./js/content/game.js?v=034f",
-  "./js/core/agenda.js?v=034f",
-  "./js/core/dimension-gear.js?v=034f",
-  "./js/core/entities.js?v=034f",
-  "./js/core/navigation.js?v=034f",
-  "./js/core/player.js?v=034f",
-  "./js/core/save-slots.js?v=034f",
-  "./js/core/save.js?v=034f",
-  "./js/core/simulation.js?v=034f",
-  "./js/core/travel.js?v=034f",
-  "./js/core/world.js?v=034f",
-  "./js/main.js?v=034f",
-  "./js/ui/dev-hud.js?v=034f",
-  "./js/ui/hold-input.js?v=034f",
-  "./js/ui/menu.js?v=034f",
-  "./js/ui/save-menu.js?v=034f",
-  "./js/ui/scene-view.js?v=034f",
-  "./js/ui/travel-view.js?v=034f",
-  "./world/world-stage.json?v=034f",
+  "./css/ovad.css?v=034g",
+  "./js/content/build.js?v=034g",
+  "./js/content/data.js?v=034g",
+  "./js/content/game.js?v=034g",
+  "./js/core/autosave.js?v=034g",
+  "./js/core/agenda.js?v=034g",
+  "./js/core/dimension-gear.js?v=034g",
+  "./js/core/entities.js?v=034g",
+  "./js/core/navigation.js?v=034g",
+  "./js/core/player.js?v=034g",
+  "./js/core/save-slots.js?v=034g",
+  "./js/core/save.js?v=034g",
+  "./js/core/simulation.js?v=034g",
+  "./js/core/travel.js?v=034g",
+  "./js/core/world.js?v=034g",
+  "./js/main.js?v=034g",
+  "./js/ui/dev-hud.js?v=034g",
+  "./js/ui/hold-input.js?v=034g",
+  "./js/ui/menu.js?v=034g",
+  "./js/ui/save-menu.js?v=034g",
+  "./js/ui/scene-view.js?v=034g",
+  "./js/ui/travel-view.js?v=034g",
+  "./world/world-stage.json?v=034g",
   "./assets/berklith-tavern.jpg",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
@@ -34,7 +35,7 @@ const CORE = [
   "./assets/intro-portrait.jpg",
   "./assets/rionnes-room.jpg"
 ];
-const assetPaths = new Set(CORE.filter(path => path.includes('?v=034f')).map(path => new URL(path, self.registration.scope).pathname));
+const assetPaths = new Set(CORE.filter(path => path.includes('?v=034g')).map(path => new URL(path, self.registration.scope).pathname));
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
@@ -72,7 +73,7 @@ self.addEventListener('fetch', event => {
     return;
   }
   const url = new URL(req.url);
-  if (url.searchParams.get('v') === '034f' && assetPaths.has(url.pathname)) {
+  if (url.searchParams.get('v') === '034g' && assetPaths.has(url.pathname)) {
     // Installed resources are served from one completed cache generation.
     event.respondWith((async () => (await caches.open(CACHE)).match(req) || fetch(req))());
   }

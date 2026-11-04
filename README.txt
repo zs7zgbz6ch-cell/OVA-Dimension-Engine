@@ -1,3 +1,7 @@
+OVA-Dimension — Clean Engine 0.3.4g · SCHEDULED AUTOSAVES
+
+Checkpoint crossings at 00:00, 06:00, 12:00, 18:00 world time create one pending autosave, committed only after successful simulation advancement and a FREE player boundary. Two rotating autosave snapshots; manual slots unchanged. No title-screen Continue UI yet.
+
 OVA-Dimension — Clean Engine 0.3.4d · SHELL SAFETY
 
 Development milestone; accepted baseline remains 0.3.4c until iPhone testing.
