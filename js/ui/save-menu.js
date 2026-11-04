@@ -1,9 +1,9 @@
 import { MANUAL_SLOTS } from '../core/save-slots.js';
-import { sceneMeta, renderLocations, renderPlayerScene } from './scene-view.js';
+import { sceneMeta } from './scene-view.js';
 
 const $ = selector => document.querySelector(selector);
 
-export function mountSaveMenu({ saves, world, player, devHud, say, closeMenu, autosave, isTitleMode = () => false, onTitleLoad = () => {} }) {
+export function mountSaveMenu({ saves, world, player, devHud, say, closeMenu, autosave, isTitleMode = () => false, onTitleLoad = () => {}, refreshView }) {
     const slotConfirm = $('#slotConfirm');
     let overwriteSlot = null;
     let motion = true;
@@ -99,9 +99,7 @@ export function mountSaveMenu({ saves, world, player, devHud, say, closeMenu, au
     function finishLoad(state, message) {
         autosave.discardPending();
         applyPresentation(state);
-        renderPlayerScene(world, player);
-        renderLocations(world, player);
-        devHud.render();
+        refreshView();
         const fromTitle = isTitleMode();
         closeMenu();
         if (fromTitle) {

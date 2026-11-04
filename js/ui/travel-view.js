@@ -1,8 +1,8 @@
-import { sceneMeta, renderPlayerScene } from './scene-view.js';
+import { sceneMeta } from './scene-view.js';
 
 const $ = selector => document.querySelector(selector);
 
-export function mountTravelView({ world, player, travel, say }) {
+export function mountTravelView({ world, player, travel, say, refreshView }) {
     const preview = $('#preview');
     const fade = $('#fade');
     let targetScene = null;
@@ -26,7 +26,7 @@ export function mountTravelView({ world, player, travel, say }) {
             try {
                 travel.travelTo(targetScene);
                 targetScene = null;
-                renderPlayerScene(world, player);
+                refreshView();
                 preview.classList.remove('open');
                 $('#overlay').classList.remove('open');
             } catch (error) {
