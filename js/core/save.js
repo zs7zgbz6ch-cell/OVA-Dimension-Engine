@@ -99,6 +99,10 @@ export class SaveSystem {
         this.slots.writeAutosave(JSON.stringify(this.capture(presentation)));
     }
 
+    hasAutosave() {
+        return this.slots.readAutosaves().length > 0;
+    }
+
     // Try the previous checkpoint if the newest is corrupt. A valid snapshot
     // still goes through the same atomic restoration contract.
     loadAutosave() {
