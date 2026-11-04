@@ -1,4 +1,4 @@
-OVA-Dimension — Clean Engine 0.4.1a · ENTITY PRESENCE
+OVA-Dimension — Clean Engine 0.4.1b · SPRITE ASSET ROUTING
 
 Based on accepted 0.3.4k. This release adds read-only NPC scene presence.
 - Pure scenePresence projection of authoritative entity state.
@@ -11,3 +11,10 @@ Based on accepted 0.3.4k. This release adds read-only NPC scene presence.
 - Existing save slots and autosave namespace remain unchanged.
 
 Upload changed files individually in the supplied order, index.html LAST.
+
+0.4.1b audit correction:
+- Service worker serves all exact precached asset URLs, including unversioned sprites.
+- Entity sprite-family paths live in content/game.js, not the scene renderer.
+- Unknown asset families use the existing generic visual fallback.
+- No preload manager, no sprite lifecycle changes, no authored spot changes.
+- A first-time image decode delay may still occur; test on iPhone.
