@@ -61,7 +61,8 @@ async function boot() {
     const devHud = mountDevHud({ gear, entities, simulation, player, say });
     const menu = mountMenu({ player, saves, devHud, say, autosave });
     const saveMenu = mountSaveMenu({
-        saves, world, player, devHud, say, closeMenu: menu.closeMenu, autosave
+        saves, world, player, devHud, say, closeMenu: menu.closeMenu, isTitleMode: menu.isTitleMode, autosave,
+        onTitleLoad: () => leaveStartup()
     });
     autosave.getPresentation = saveMenu.presentationState;
     menu.setRefreshSlots(saveMenu.refreshSlots);
@@ -99,6 +100,27 @@ async function boot() {
 
     // Continue restores a complete validated snapshot before the opening fade.
     // A corrupt latest snapshot is automatically retried against the older one.
+    // Title choices are explicit; tapping the background never starts a game.
+    const newGameConfirm = $('#newGameConfirm');
+    $('#newGameBtn').addEventListener('click', () => {
+        if (startupLeaving) return;
+        try {
+            if (saves.hasAutosave()) newGameConfirm.classList.add('open');
+            else leaveStartup();
+        } catch (error) {
+            console.error('New Game safety check failed:', error);
+            say('Could not check existing saves. Please try again.');
+        }
+    });
+    $('#cancelNewGame').addEventListener('click', () => newGameConfirm.classList.remove('open'));
+    $('#confirmNewGame').addEventListener('click', () => {
+        newGameConfirm.classList.remove('open');
+        leaveStartup();
+    });
+    $('#titleLoadBtn').addEventListener('click', () => menu.openTitlePage('loadPage'));
+    $('#titleSettingsBtn').addEventListener('click', () => menu.openTitlePage('settingsPage'));
+    $('#titleExtraBtn').addEventListener('click', () => menu.openTitlePage('extraPage'));
+
     continueButton.addEventListener('pointerup', event => event.stopPropagation());
     continueButton.addEventListener('click', event => {
         event.stopPropagation();
@@ -117,10 +139,6 @@ async function boot() {
             console.error('Continue failed:', error);
             say('Autosave unavailable · start normally or try again.');
         }
-    });
-    welcome.addEventListener('pointerup', event => {
-        if (event.target.closest('#continueBtn')) return;
-        leaveStartup();
     });
 
     // Development-only inspection interface; not used by gameplay modules.
