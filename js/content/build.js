@@ -1,6 +1,6 @@
 export const BUILD_INFO = Object.freeze({
-    version: '0.3.4f',
-    name: 'SIMULATION SAFETY'
+    version: '0.3.4g',
+    name: 'SCHEDULED AUTOSAVES'
 });
 
 export function buildLabel(){
