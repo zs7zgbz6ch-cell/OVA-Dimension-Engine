@@ -48,6 +48,11 @@ export class World {
         );
     }
 
+    spot(sceneId, spotId) {
+        const node = this.nodes.get(this.key(sceneId, spotId));
+        return node ? { ...node } : null;
+    }
+
     findPath(startLocation, destination) {
         const start = this.key(startLocation.scene, startLocation.spot);
         const end = this.key(destination.scene, destination.spot);
@@ -81,7 +86,7 @@ export class World {
 }
 
 export async function loadWorld() {
-    const response = await fetch("./world/world-stage.json?v=034k", {
+    const response = await fetch("./world/world-stage.json?v=041a", {
         cache: "no-store"
     });
 
