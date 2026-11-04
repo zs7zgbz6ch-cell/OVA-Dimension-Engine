@@ -1,6 +1,6 @@
 export const BUILD_INFO = Object.freeze({
-    version: '0.3.4h',
-    name: 'CONTINUE & RECOVERY'
+    version: '0.3.4i',
+    name: 'FINAL ENGINE POLISH'
 });
 
 export function buildLabel(){
