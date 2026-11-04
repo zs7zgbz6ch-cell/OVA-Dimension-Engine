@@ -58,20 +58,25 @@ async function boot() {
     });
     simulation.onSuccessfulAdvance(result => autosave.onAdvance(result));
 
+    function refreshView() {
+        renderPlayerScene(world, player, entities);
+        renderLocations(world, player);
+        devHud.render();
+    }
+    simulation.onSuccessfulAdvance(refreshView);
+
     const devHud = mountDevHud({ gear, entities, simulation, player, say });
     const menu = mountMenu({ player, saves, devHud, say, autosave });
     const saveMenu = mountSaveMenu({
         saves, world, player, devHud, say, closeMenu: menu.closeMenu, isTitleMode: menu.isTitleMode, autosave,
-        onTitleLoad: () => leaveStartup()
+        onTitleLoad: () => leaveStartup(), refreshView
     });
     autosave.getPresentation = saveMenu.presentationState;
     menu.setRefreshSlots(saveMenu.refreshSlots);
-    mountTravelView({ world, player, travel, say });
+    mountTravelView({ world, player, travel, say, refreshView });
     mountHoldInput({ app, player, openMenu: menu.openMenu, isBlocked: menu.isBlocked });
 
-    renderLocations(world, player);
-    renderPlayerScene(world, player);
-    devHud.render();
+    refreshView();
 
     const continueButton = $('#continueBtn');
     try {
@@ -130,9 +135,7 @@ async function boot() {
             if (presentation === null) throw new Error('No autosave is available.');
             autosave.discardPending();
             saveMenu.applyPresentation(presentation);
-            renderPlayerScene(world, player);
-            renderLocations(world, player);
-            devHud.render();
+            refreshView();
             player.setInteraction('STARTUP');
             leaveStartup();
         } catch (error) {
