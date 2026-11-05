@@ -1,4 +1,4 @@
-OVA-Dimension — Clean Engine 0.4.1b · SPRITE ASSET ROUTING
+OVA-Dimension — Clean Engine 0.4.1c · RENDERER LIFECYCLE
 
 Based on accepted 0.3.4k. This release adds read-only NPC scene presence.
 - Pure scenePresence projection of authoritative entity state.
@@ -18,3 +18,9 @@ Upload changed files individually in the supplied order, index.html LAST.
 - Unknown asset families use the existing generic visual fallback.
 - No preload manager, no sprite lifecycle changes, no authored spot changes.
 - A first-time image decode delay may still occur; test on iPhone.
+
+0.4.1c renderer lifecycle:
+- Preserve unchanged sprite DOM elements by entity ID and asset path.
+- Update Lab-authored spot positioning without replacing unchanged images.
+- One shared fallback creator for unknown or failed sprite assets.
+- No changes to simulation, saves, artwork or spot data.
