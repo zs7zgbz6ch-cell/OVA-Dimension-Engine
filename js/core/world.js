@@ -86,7 +86,7 @@ export class World {
 }
 
 export async function loadWorld() {
-    const response = await fetch("./world/world-stage.json?v=042a", {
+    const response = await fetch("./world/world-stage.json?v=042b", {
         cache: "no-store"
     });
 
