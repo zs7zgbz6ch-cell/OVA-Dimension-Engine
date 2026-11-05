@@ -1,4 +1,4 @@
-OVA-Dimension — Clean Engine 0.4.1c · RENDERER LIFECYCLE
+OVA-Dimension — Clean Engine 0.4.2a · MOVEMENT EVENTS
 
 Based on accepted 0.3.4k. This release adds read-only NPC scene presence.
 - Pure scenePresence projection of authoritative entity state.
@@ -24,3 +24,10 @@ Upload changed files individually in the supplied order, index.html LAST.
 - Update Lab-authored spot positioning without replacing unchanged images.
 - One shared fallback creator for unknown or failed sprite assets.
 - No changes to simulation, saves, artwork or spot data.
+
+0.4.2a movement events:
+- Successful Simulation.advance() now returns immutable moves alongside old/now.
+- Each event contains entityId, exact epoch minute, from/to and complete route.
+- No events leak from a rolled-back advance; observers see committed results.
+- Initialization does not generate movement events; visual behavior is unchanged.
+- No movement animation, occupancy scheduling, or presentation logic yet.
