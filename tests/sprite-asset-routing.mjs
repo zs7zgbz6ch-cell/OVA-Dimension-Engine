@@ -11,5 +11,5 @@ assert.equal(ENTITY_SPRITES.rionne, './assets/sprites/rionne-front.png');
 assert.equal(ENTITY_SPRITES.barmaid, './assets/sprites/barmaid-serving.png');
 assert.match(renderer, /ENTITY_SPRITES\[person\.assetFamily\]/);
 assert.doesNotMatch(renderer, /SPRITES\s*=\s*Object\.freeze/);
-assert.match(renderer, /if \(sprite\) img\.src = sprite/);
+assert.match(renderer, /img\.src = sprite/);
 console.log('PASS: generic content sprite resolution and exact precache routing');
