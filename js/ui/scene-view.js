@@ -12,6 +12,39 @@ export function sceneMeta(world, sceneId) {
     };
 }
 
+// Presentation nodes are keyed by entity ID; world state remains authoritative.
+function positionActor(node, spot) {
+    node.style.left = `${spot.x}%`;
+    node.style.top = `${spot.y}%`;
+    if (node.className === 'scene-actor') node.style.height = `${spot.scale}%`;
+}
+
+function makeFallback(id, spot, sprite = '') {
+    const node = document.createElement('span');
+    node.className = 'scene-actor-fallback';
+    node.dataset.entity = id;
+    node.dataset.sprite = sprite;
+    node.textContent = '✦';
+    positionActor(node, spot);
+    return node;
+}
+
+function makeActor(person, sprite) {
+    if (!sprite) return makeFallback(person.id, person.spot);
+    const img = document.createElement('img');
+    img.className = 'scene-actor';
+    img.alt = '';
+    img.setAttribute('aria-hidden', 'true');
+    img.dataset.entity = person.id;
+    positionActor(img, person.spot);
+    img.addEventListener('error', () => {
+        // An image that has already left the stage must not be reinserted.
+        if (img.parentNode) img.replaceWith(makeFallback(person.id, person.spot, sprite));
+    }, { once: true });
+    img.src = sprite;
+    return img;
+}
+
 export function renderPlayerScene(world, player, entities) {
     const data = sceneMeta(world, player.sceneId);
     const scene = document.querySelector('#scene');
@@ -25,39 +58,30 @@ export function renderPlayerScene(world, player, entities) {
         stage.append(actors);
         scene.replaceChildren(stage);
     }
-    stage.style.backgroundImage = data.image ? `url('${data.image}')` : 'none';
+    const background = data.image ? `url('${data.image}')` : 'none';
+    if (stage.style.backgroundImage !== background) stage.style.backgroundImage = background;
     const actors = stage.querySelector('.scene-actors');
     const presence = entities ? scenePresence(world, entities, player.sceneId) : [];
-    const nodes = presence.map(person => {
-        const img = document.createElement('img');
-        img.className = 'scene-actor';
-        img.alt = '';
-        img.setAttribute('aria-hidden', 'true');
-        img.dataset.entity = person.id;
-        img.style.left = `${person.spot.x}%`;
-        img.style.top = `${person.spot.y}%`;
-        img.style.height = `${person.spot.scale}%`;
+    const existing = new Map(Array.from(actors.children, node => [node.dataset.entity, node]));
+    const ordered = [];
+    for (const person of presence) {
         const sprite = ENTITY_SPRITES[person.assetFamily];
-        if (sprite) img.src = sprite;
-        else {
-            const fallback = document.createElement('span');
-            fallback.className = 'scene-actor-fallback';
-            fallback.textContent = '✦';
-            fallback.style.left = img.style.left;
-            fallback.style.top = img.style.top;
-            return fallback;
+        let node = existing.get(person.id);
+        // A changed asset requires a new image; an unchanged one keeps its DOM node.
+        if (!node || (sprite && (node.className === 'scene-actor' ? node.getAttribute('src') !== sprite : node.dataset.sprite !== sprite)) ||
+            (!sprite && node.className !== 'scene-actor-fallback')) {
+            node = makeActor(person, sprite);
+        } else {
+            positionActor(node, person.spot);
         }
-        img.addEventListener('error', () => {
-            const fallback = document.createElement('span');
-            fallback.className = 'scene-actor-fallback';
-            fallback.textContent = '✦';
-            fallback.style.left = img.style.left;
-            fallback.style.top = img.style.top;
-            img.replaceWith(fallback);
-        }, { once: true });
-        return img;
-    });
-    actors.replaceChildren(...nodes);
+        ordered.push(node);
+    }
+    // append() moves existing nodes without recreating or re-requesting images.
+    // Only update the child list when its identities/order actually change.
+    if (ordered.length !== actors.children.length ||
+        ordered.some((node, index) => actors.children[index] !== node)) {
+        actors.replaceChildren(...ordered);
+    }
 }
 
 export function renderLocations(world, player) {
