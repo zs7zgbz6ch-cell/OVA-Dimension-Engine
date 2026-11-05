@@ -1,4 +1,4 @@
-OVA-Dimension — Clean Engine 0.4.2a · MOVEMENT EVENTS
+OVA-Dimension — Clean Engine 0.4.2b · MOVEMENT PLANNER
 
 Based on accepted 0.3.4k. This release adds read-only NPC scene presence.
 - Pure scenePresence projection of authoritative entity state.
@@ -31,3 +31,6 @@ Upload changed files individually in the supplied order, index.html LAST.
 - No events leak from a rolled-back advance; observers see committed results.
 - Initialization does not generate movement events; visual behavior is unchanged.
 - No movement animation, occupancy scheduling, or presentation logic yet.
+
+0.4.2b movement planning:
+Pure scene-local witness plans from committed movement events. Exact-minute routes, skipped-time settled fades, directional poses, cross-scene boundaries. No runtime animation or world data changes.
