@@ -1,6 +1,6 @@
 export const BUILD_INFO = Object.freeze({
-    version: '0.4.2a',
-    name: 'MOVEMENT EVENTS'
+    version: '0.4.2b',
+    name: 'MOVEMENT PLANNER'
 });
 
 export function buildLabel(){
