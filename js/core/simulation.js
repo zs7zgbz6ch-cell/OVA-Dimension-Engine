@@ -1,5 +1,20 @@
 import { clockFromEpochMinute } from './dimension-gear.js';
 
+function committedMovement(navigation, entityId, minute, destination) {
+    // Capture only committed navigation facts; callers cannot mutate the world
+    // or another observer's event through the returned payload.
+    const route = navigation.route.map(step => Object.freeze({
+        scene: step.scene, spot: step.spot, type: step.type
+    }));
+    return Object.freeze({
+        entityId,
+        minute,
+        from: Object.freeze({ ...navigation.from }),
+        to: Object.freeze({ scene: destination.scene, spot: destination.spot }),
+        route: Object.freeze(route)
+    });
+}
+
 function sameLocation(a, b) {
     return a.scene === b.scene && a.spot === b.spot;
 }
@@ -37,15 +52,16 @@ export class Simulation {
         const before = this.entities.snapshot();
         const logLength = this.log.length;
         const old = this.gear.snapshot();
+        const moves = [];
         try {
             // Evaluate each minute before committing its clock. A failure anywhere
             // restores the entire advance, including entity state and log entries.
             for (let offset = 1; offset <= minutes; offset += 1) {
                 const clock = clockFromEpochMinute(startMinute + offset);
-                this.evaluate(clock, 'TIME');
+                this.evaluate(clock, 'TIME', moves);
                 this.gear.setEpochMinute(clock.epochMinute);
             }
-            const result = { old, now: this.gear.snapshot() };
+            const result = { old, now: this.gear.snapshot(), moves: Object.freeze(moves) };
             // Post-commit observers cannot roll back an already successful world advance.
             for (const listener of this.advanceListeners) {
                 try { listener(result); }
@@ -65,7 +81,7 @@ export class Simulation {
         }
     }
 
-    evaluate(clock, reason) {
+    evaluate(clock, reason, moves = null) {
         for (const entity of this.entities.all()) {
             const intent = this.agendas.resolve(entity.agendaId, clock);
             if (!intent) continue;
@@ -89,6 +105,12 @@ export class Simulation {
                     intent.destination,
                     clock.epochMinute
                 );
+            }
+
+            if (navigation?.moved && moves) {
+                moves.push(committedMovement(
+                    navigation, entity.id, clock.epochMinute, entity.state.location
+                ));
             }
 
             if (agendaChanged || navigation?.moved) {
