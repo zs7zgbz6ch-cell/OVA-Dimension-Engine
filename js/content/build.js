@@ -1,6 +1,6 @@
 export const BUILD_INFO = Object.freeze({
-    version: '0.4.1b',
-    name: 'SPRITE ASSET ROUTING'
+    version: '0.4.1c',
+    name: 'RENDERER LIFECYCLE'
 });
 
 export function buildLabel(){
