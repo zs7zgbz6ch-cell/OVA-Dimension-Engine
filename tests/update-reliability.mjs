@@ -7,12 +7,12 @@ const slots = readFileSync(new URL('../js/core/save-slots.js', import.meta.url),
 const map = JSON.parse(html.match(/<script type="importmap">([\s\S]*?)<\/script>/)[1]).imports;
 for (const folder of ['core','ui','content']) for (const name of readdirSync(new URL(`../js/${folder}/`, import.meta.url)).filter(n => n.endsWith('.js'))) {
   const path = `./js/${folder}/${name}`;
-  assert.equal(map[path], `${path}?v=041c`, path);
-  assert.ok(sw.includes(`${path}?v=041c`), path);
+  assert.equal(map[path], `${path}?v=042a`, path);
+  assert.ok(sw.includes(`${path}?v=042a`), path);
 }
-assert.match(html, /main\.js\?v=041c/);
-assert.match(html, /ovad\.css\?v=041c/);
-assert.match(world, /world-stage\.json\?v=041c/);
+assert.match(html, /main\.js\?v=042a/);
+assert.match(html, /ovad\.css\?v=042a/);
+assert.match(world, /world-stage\.json\?v=042a/);
 assert.match(slots, /ovad_clean_engine_v034b_/);
 assert.doesNotMatch(sw, /cache\.put\(/);
 console.log('PASS: complete versioned module graph, asset manifest, stable save namespace');
