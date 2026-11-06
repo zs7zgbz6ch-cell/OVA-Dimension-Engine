@@ -24,3 +24,16 @@ export const ENTITY_SPRITES = Object.freeze({
     rionne: './assets/sprites/rionne-front.png',
     barmaid: './assets/sprites/barmaid-serving.png'
 });
+
+// Directional artwork is content data, not renderer-specific character logic.
+// Right-facing three-quarter views mirror the authored left variants.
+export const ENTITY_MOVEMENT_SPRITES = Object.freeze({
+    rionne: Object.freeze({
+        front: './assets/sprites/rionne-front.png',
+        back: './assets/sprites/rionne-back.png',
+        left: './assets/sprites/rionne-front-three-quarter.png',
+        'front-three-quarter-left': './assets/sprites/rionne-front-three-quarter.png',
+        'back-three-quarter-left': './assets/sprites/rionne-back-three-quarter.png'
+    }),
+    barmaid: Object.freeze({ front: './assets/sprites/barmaid-serving.png' })
+});
