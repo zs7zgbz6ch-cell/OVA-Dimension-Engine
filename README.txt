@@ -1,3 +1,10 @@
+OVA-Dimension 0.4.2c — Movement Renderer (testing candidate)
+
+First visible movement presentation. Simulation and saved world state remain authoritative.
+Exact-time agenda arrivals plan scene-local walks; skipped times use short fades.
+Temporary MOVEMENT interaction lock releases on completion or cancellation.
+To/From transfer choreography is reserved for 0.4.2d.
+
 OVA-Dimension — Clean Engine 0.4.2b · MOVEMENT PLANNER
 
 Based on accepted 0.3.4k. This release adds read-only NPC scene presence.
