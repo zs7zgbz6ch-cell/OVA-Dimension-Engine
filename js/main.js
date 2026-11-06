@@ -16,6 +16,7 @@ import { mountSaveMenu } from './ui/save-menu.js';
 import { mountTravelView } from './ui/travel-view.js';
 import { mountHoldInput } from './ui/hold-input.js';
 import { renderLocations, renderPlayerScene } from './ui/scene-view.js';
+import { createMovementView } from './ui/movement-view.js';
 
 const $ = selector => document.querySelector(selector);
 const app = $('#app');
@@ -58,12 +59,18 @@ async function boot() {
     });
     simulation.onSuccessfulAdvance(result => autosave.onAdvance(result));
 
+    const movementView = createMovementView({ world, entities, player });
+
     function refreshView() {
+        movementView.cancel();
         renderPlayerScene(world, player, entities);
         renderLocations(world, player);
         devHud.render();
     }
-    simulation.onSuccessfulAdvance(refreshView);
+    simulation.onSuccessfulAdvance(result => {
+        refreshView();
+        movementView.play(result);
+    });
 
     const devHud = mountDevHud({ gear, entities, simulation, player, say });
     const menu = mountMenu({ player, saves, devHud, say, autosave });
