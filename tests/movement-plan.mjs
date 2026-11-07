@@ -21,9 +21,8 @@ assert.equal(room[0].legs.length,1); assert.equal(room[0].arrivals.length,1);
 assert.equal(room[0].departures.length,0);
 assert.equal(planMovement({moves:[move],endMinute:100,scene:'OTHER',world}).length,0);
 const skipped = planMovement({moves:[move],endMinute:110,scene:'T',world});
-assert.equal(skipped[0].mode,'settle'); assert.equal(skipped[0].fadeOut.spot,'A');
-assert.equal(skipped[0].fadeIn,null);
-assert.equal(planMovement({moves:[move],endMinute:110,scene:'R',world})[0].fadeIn.spot,'B');
+assert.equal(skipped.length,0);
+assert.equal(planMovement({moves:[move],endMinute:110,scene:'R',world}).length,0);
 assert.ok(Object.isFrozen(tavern) && Object.isFrozen(tavern[0]) && Object.isFrozen(tavern[0].legs));
 assert.equal(spots['T/M'].type,'tofrom'); // Presentation markers never join navigation route.
 assert.throws(()=>planMovement({moves:[move],endMinute:99,scene:'T',world}));

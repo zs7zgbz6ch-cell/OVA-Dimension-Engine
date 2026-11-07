@@ -57,6 +57,7 @@ const player = {
 };
 const location = spot => ({ scene: 'TAVERN', spot });
 const result = {
+    old: { epochMinute: 419 },
     now: { epochMinute: 420 },
     moves: [{
         entityId: 'rionne', minute: 420,
@@ -88,6 +89,7 @@ assert.equal(rionne.style.visibility, undefined);
 // The 10:00 regression: the Barmaid settles first, while Rionne waits
 // at the stairs/bar starting spot. She must not vanish during that fade.
 const overlap = {
+    old: { epochMinute: 599 },
     now: { epochMinute: 600 },
     moves: [
         {
@@ -104,7 +106,7 @@ const overlap = {
 };
 view.play(overlap);
 assert.equal(rionne.style.visibility, 'hidden');
-assert.equal(barmaid.style.visibility, 'hidden');
+assert.equal(barmaid.style.visibility, undefined, 'crossed events must not replay');
 const waitingRionne = stage.children.find(node => node.dataset.movementEntity === 'rionne');
 assert.ok(waitingRionne, 'Rionne must have a replacement before the Barmaid fades');
 assert.equal(waitingRionne.style.opacity, 1, 'Rionne must be visible while waiting');
