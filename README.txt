@@ -40,3 +40,13 @@ Do not accept until visual tests pass and the independent code audit is done.
 0.4.2c.4: Mount starting-position walking overlays before any settle fades.
 The final-position sprites stay hidden while a walker waits for other NPCs.
 No changes to movement geometry, walking pace, or agendas.
+
+0.4.2d — Transfer choreography (testing candidate)
+- World Stage 0.8.2 is the authored source for fade connections and To/From.
+- Connection movement is preserved from the navigation graph into immutable
+  committed events and pure, ordered presentation actions.
+- Fade connections use paired endpoint fades; waypoints remain walk-only.
+- To/From markers are presentation-only and never navigation destinations.
+- Transfer pauses and turn timing live in js/core/transfer-plan.js.
+- The simulation, save namespace and accepted walking geometry are unchanged.
+- iPhone Safari verification is required before accepting this release.
