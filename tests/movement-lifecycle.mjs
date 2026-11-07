@@ -69,6 +69,10 @@ const view = createMovementView({ world, entities, player });
 view.play(result);
 assert.equal(rionne.style.visibility, 'hidden', 'destination must be hidden synchronously');
 assert.equal(barmaid.style.visibility, undefined, 'unrelated NPC must remain visible');
+assert.equal(stage.children.filter(node => node.dataset.movementEntity === 'rionne').length, 1,
+    'walking overlay must be mounted synchronously');
+assert.equal(stage.children.find(node => node.dataset.movementEntity === 'rionne').style.opacity, 1,
+    'walking character must remain visible at their starting position');
 assert.equal(player.interaction, 'MOVEMENT');
 view.cancel();
 assert.equal(rionne.style.visibility, undefined, 'cancel restores original visibility');
@@ -81,4 +85,33 @@ assert.equal(rionne.style.visibility, 'hidden');
 assert.equal(barmaid.style.visibility, undefined);
 view.cancel();
 assert.equal(rionne.style.visibility, undefined);
-console.log('PASS: synchronous sprite ownership, independent NPCs, cancellation and repeat day');
+// The 10:00 regression: the Barmaid settles first, while Rionne waits
+// at the stairs/bar starting spot. She must not vanish during that fade.
+const overlap = {
+    now: { epochMinute: 600 },
+    moves: [
+        {
+            entityId: 'barmaid', minute: 560,
+            from: location('STAIRS'), to: location('BAR'),
+            route: [location('STAIRS'), location('BAR')]
+        },
+        {
+            entityId: 'rionne', minute: 600,
+            from: location('BAR'), to: location('STAIRS'),
+            route: [location('BAR'), location('STAIRS')]
+        }
+    ]
+};
+view.play(overlap);
+assert.equal(rionne.style.visibility, 'hidden');
+assert.equal(barmaid.style.visibility, 'hidden');
+const waitingRionne = stage.children.find(node => node.dataset.movementEntity === 'rionne');
+assert.ok(waitingRionne, 'Rionne must have a replacement before the Barmaid fades');
+assert.equal(waitingRionne.style.opacity, 1, 'Rionne must be visible while waiting');
+assert.equal(waitingRionne.style.left, '36%', 'Rionne must wait at her starting spot');
+assert.equal(stage.children.filter(node => node.dataset.movementEntity === 'rionne').length, 1);
+view.cancel();
+assert.equal(stage.children.some(node => node.dataset.movementEntity), false);
+assert.equal(rionne.style.visibility, undefined);
+assert.equal(barmaid.style.visibility, undefined);
+console.log('PASS: synchronous replacement, overlap waiting visibility, cancellation and repeat day');
