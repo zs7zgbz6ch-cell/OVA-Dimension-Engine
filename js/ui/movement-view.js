@@ -294,6 +294,7 @@ export function createMovementView({ world, entities, player }) {
         const plans = planMovement({
             moves: result.moves,
             endMinute: result.now.epochMinute,
+            startMinute: result.old.epochMinute,
             scene: player.sceneId,
             world
         });
