@@ -1,3 +1,19 @@
+OVA-Dimension 0.4.2d.1 — Movement Corrections (TEST CANDIDATE)
+
+Full project based on 0.4.2d. No scene spots, connections, agendas,
+simulation commitments, save namespaces, or sprite assets changed.
+
+- Directional pose uses authored depth scaling as well as X/Y displacement:
+  movement into the background uses back-facing three-quarter sprites.
+- Large time advances are seeks: the authoritative simulation still processes
+  all agenda events, but the presenter does not replay intermediate history.
+- A short advance (up to 60 minutes) may animate an event occurring exactly
+  at the resulting minute. Crossed earlier events are never replayed.
+- Cancellable animation and independent NPC visibility remain unchanged.
+- All module URLs and service-worker cache names updated for safe deployment.
+
+GitHub upload: tests, core, UI, build, README, sw.js, index.html LAST.
+
 OVA-Dimension 0.4.2c.4 — Movement Waiting Visibility (TEST CANDIDATE)
 
 Complete project based on 0.4.2c.2. No world coordinates, agendas,
