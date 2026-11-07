@@ -1,4 +1,5 @@
-import { planMovement } from '../core/movement-plan.js';
+import { TRANSFER_TIMING } from '../core/transfer-plan.js';
+import { movementPose, planMovement } from '../core/movement-plan.js';
 import { MOTION, routeFrames, walkDuration } from '../core/route-path.js';
 import { ENTITY_MOVEMENT_SPRITES } from '../content/game.js';
 
@@ -94,8 +95,8 @@ async function animate(node, frames, duration, state) {
     }
 }
 
-async function fadeAt(node, entity, spot, from, to, state) {
-    const pose = await preparePose(node, entity, 'front', state.abort.signal);
+async function fadeAt(node, entity, spot, from, to, state, facing = 'front') {
+    const pose = await preparePose(node, entity, facing, state.abort.signal);
     if (!pose) return;
     const initial = anchor(spot, from, pose.mirror);
     Object.assign(node.style, initial);
@@ -131,45 +132,102 @@ async function schedulePoses(node, entity, samples, legs, duration, state) {
     }
 }
 
-async function playWalk(node, entity, plan, state) {
+async function playLegs(node, entity, legs, state) {
     const signal = state.abort.signal;
+    if (!legs.length || signal.aborted) return;
+    const pose = await preparePose(node, entity, legs[0].pose, signal);
+    if (!pose) return;
+    const samples = routeFrames(legs);
+    const duration = walkDuration(legs);
+    node.style.transform = facingTransform(pose.mirror);
+    const frames = samples.map(sample => {
+        const position = anchor(sample, 1, pose.mirror);
+        return {
+            offset: sample.offset,
+            left: position.left,
+            top: position.top,
+            height: position.height,
+            opacity: 1
+        };
+    });
+    const poseTask = schedulePoses(node, entity, samples, legs, duration, state);
+    await animate(node, frames, duration, state);
+    await poseTask;
+}
+
+async function playTurn(node, entity, action, state, facing) {
+    const poseName = movementPose(action.from, action.to);
+    if (poseName === 'stationary' || poseName === facing.pose) return facing;
+    const pose = await preparePose(node, entity, poseName, state.abort.signal);
+    if (!pose) return facing;
+    node.style.transform = facingTransform(pose.mirror);
+    await wait(TRANSFER_TIMING.turnPauseMs, state.abort.signal);
+    return { pose: poseName };
+}
+
+async function playMarker(node, entity, action, state) {
+    const poseName = movementPose(action.from, action.to);
+    const pose = await preparePose(node, entity, poseName, state.abort.signal);
+    if (!pose) return;
+    const from = anchor(action.from, action.entering ? 0 : 1, pose.mirror);
+    const to = anchor(action.to, action.entering ? 1 : 0, pose.mirror);
+    Object.assign(node.style, from);
+    await animate(node, [from, to], TRANSFER_TIMING.markerWalkMs, state);
+}
+
+async function playActions(node, entity, plan, state) {
+    let facing = { pose: 'front' };
+    for (const action of plan.actions) {
+        if (state.abort.signal.aborted) return;
+        switch (action.kind) {
+            case 'walk':
+                await playLegs(node, entity, action.legs, state);
+                facing = { pose: action.legs.at(-1).pose };
+                break;
+            case 'pause':
+                await wait(action.ms, state.abort.signal);
+                break;
+            case 'turn':
+                facing = await playTurn(node, entity, action, state, facing);
+                break;
+            case 'fade-out':
+                await fadeAt(node, entity, action.at, 1, 0, state, facing.pose);
+                break;
+            case 'fade-in':
+                await fadeAt(node, entity, action.at, 0, 1, state, facing.pose);
+                break;
+            case 'marker':
+                await playMarker(node, entity, action, state);
+                facing = { pose: movementPose(action.from, action.to) };
+                break;
+            default:
+                throw new Error(`Unknown movement action: ${action.kind}`);
+        }
+    }
+}
+
+async function playWalk(node, entity, plan, state) {
+    if (plan.actions) {
+        await playActions(node, entity, plan, state);
+        return;
+    }
+    // Compatibility with older movement plans used by independent callers.
     for (const arrival of plan.arrivals || []) {
-        if (signal.aborted) return;
         await fadeAt(node, entity, arrival, 0, 1, state);
     }
-
-    const legs = plan.legs || [];
-    if (!signal.aborted && legs.length) {
-        const pose = await preparePose(node, entity, legs[0].pose, signal);
-        if (!pose) return;
-        const samples = routeFrames(legs);
-        const duration = walkDuration(legs);
-        node.style.transform = facingTransform(pose.mirror);
-        // Position and pose have independent timelines. A pose switch never
-        // restarts the walk or changes the Lab-authored destination.
-        const frames = samples.map(sample => {
-            const position = anchor(sample, 1, pose.mirror);
-            return {
-                offset: sample.offset,
-                left: position.left,
-                top: position.top,
-                height: position.height,
-                opacity: 1
-            };
-        });
-        const poseTask = schedulePoses(node, entity, samples, legs, duration, state);
-        await animate(node, frames, duration, state);
-        await poseTask;
-    }
-
+    await playLegs(node, entity, plan.legs || [], state);
     for (const departure of plan.departures || []) {
-        if (signal.aborted) return;
         await fadeAt(node, entity, departure, 1, 0, state);
     }
 }
 
 function planStart(plan) {
     if (plan.mode === 'settle') return plan.fadeOut || plan.fadeIn;
+    if (plan.actions?.length) {
+        const first = plan.actions[0];
+        return first.at || first.from || first.legs?.[0]?.from ||
+            plan.legs?.[0]?.from;
+    }
     return plan.arrivals?.[0] || plan.legs?.[0]?.from || plan.departures?.[0];
 }
 
@@ -266,7 +324,9 @@ export function createMovementView({ world, entities, player }) {
             const start = planStart(plan);
             if (!start) continue;
             const entity = entities.get(plan.entityId);
-            const opacity = plan.arrivals?.length || settlingEntities.has(plan.entityId) ? 0 : 1;
+            const entering = plan.actions?.[0]?.kind === 'fade-in' ||
+                (plan.actions?.[0]?.kind === 'marker' && plan.actions[0].entering);
+            const opacity = entering || settlingEntities.has(plan.entityId) ? 0 : 1;
             const node = createOverlay(stage, plan.entityId, entity, start, state, opacity);
             if (node) preparedWalks.set(plan, node);
         }
@@ -290,7 +350,7 @@ export function createMovementView({ world, entities, player }) {
                 await wait(delay, state.abort.signal);
                 if (!state.abort.signal.aborted) {
                     const preparedNode = preparedWalks.get(plan) || null;
-                    if (preparedNode && settlingEntities.has(plan.entityId) && !plan.arrivals?.length) {
+                    if (preparedNode && settlingEntities.has(plan.entityId) && !plan.arrivals?.length && plan.actions?.[0]?.kind !== 'fade-in') {
                         preparedNode.style.opacity = 1;
                     }
                     await playPlan(plan, state, stage, preparedNode);
