@@ -1,29 +1,38 @@
-OVA-Dimension 0.4.2c.2 — Movement Cornering & Visibility (TEST CANDIDATE)
+OVA-Dimension 0.4.2c.3 — Movement Lifecycle & Refactor (TEST CANDIDATE)
 
-Based on the full 0.4.2c.1 project.
+Complete project based on 0.4.2c.2. No world coordinates, agendas,
+simulation semantics, or save namespaces were changed.
 
 Changes:
-- Individual actor overlays hide and restore only their own final-state sprites.
-- Skipped agenda fades complete before witnessed walking presentations.
-- Mildly rounded waypoint corners with speed reduction through the bend.
-- Walking pace adjusted from 42 to 55 ms per percentage unit.
-- Continuous whole-route animation with directional sprite changes.
-- Movement tests cover rounded waypoint and exact transfer anchors.
+- Synchronously hide every participating final-position actor before any
+  delayed fade or walk begins; unrelated actors remain visible.
+- Restore each actor only after its final plan, or on cancellation.
+- Separate pure rounded-path geometry into js/core/route-path.js.
+- Split presentation into settle, walk, pose scheduling and cleanup functions.
+- Report unexpected presentation failures without hiding them.
+- Use Rionne's authentic right-facing three-quarter artwork, not mirroring.
+- Retain 0.4.2c.2 walking speed, rounded corners and transfer anchors.
+- Add actual presenter lifecycle regression test for immediate hide/cancel.
 
-No world, agenda, simulation, save namespace, or spot coordinate changes.
-Transfer pause/turn choreography and To/From support are NOT part of this release.
+Not included: transfer pause/turn choreography, To/From behavior, Agenda Lab.
 
-GitHub changed-file order:
-1 js/ui/movement-view.js
-2 tests/movement-view.mjs
-3 tests/update-reliability.mjs
-4 js/core/world.js
-5 js/content/build.js
-6 README.txt
-7 sw.js
-8 index.html (LAST)
+GitHub changed/new file upload order (index.html LAST):
+1 assets/sprites/rionne-front-three-quarter-right.png (NEW)
+2 assets/sprites/rionne-back-three-quarter-right.png (NEW)
+3 js/core/route-path.js (NEW)
+4 js/core/movement-plan.js
+5 js/ui/movement-view.js
+6 js/content/game.js
+7 js/content/build.js
+8 js/core/world.js
+9 tests/movement-view.mjs
+10 tests/movement-lifecycle.mjs (NEW)
+11 tests/update-reliability.mjs
+12 README.txt
+13 sw.js
+14 index.html (LAST)
 
-Commit: fix: 0.4.2c.2 movement cornering
+Commit: fix: 0.4.2c.3 movement lifecycle
 
-Test on iPhone at 07:00, 09:00, 10:00, 18:00.
-Do not accept until visual tests pass.
+Test on iPhone at 07:00, 09:00, 10:00, 18:00, then day two 07:00.
+Do not accept until visual tests pass and the independent code audit is done.
