@@ -1,11 +1,11 @@
 import { planMovement } from '../core/movement-plan.js';
 import { ENTITY_MOVEMENT_SPRITES } from '../content/game.js';
 
-// Stage-percent distances are presentation units, not simulated world distance.
-export const MOTION = Object.freeze({ msPerPercent: 42, minWalkMs: 2200, fadeMs: 520, staggerMs: 170 });
+// Presentation-only timing. Lab coordinates and world routes remain authoritative.
+export const MOTION = Object.freeze({ msPerPercent: 55, minWalkMs: 2200, fadeMs: 520,
+    staggerMs: 170, cornerRadius: 1.3, cornerSlowdown: 0.32 });
 export const routeDistance = legs => legs.reduce((sum, leg) => sum + Math.hypot(leg.to.x - leg.from.x, leg.to.y - leg.from.y), 0);
 export const walkDuration = legs => legs.length ? Math.max(MOTION.minWalkMs, routeDistance(legs) * MOTION.msPerPercent) : 0;
-// Preserve the previous public helper for tools/tests that inspect individual distances.
 export const legDuration = (from, to) => Math.max(260, Math.hypot(to.x - from.x, to.y - from.y) * MOTION.msPerPercent);
 
 const anchor = (spot, opacity = 1, mirror = false) => ({
@@ -34,24 +34,60 @@ function wait(ms, signal) {
     });
 }
 
-// A single easing envelope spans the entire path. Intermediate waypoints do
-// not have independent ease-in/out curves or artificial pauses.
-export function routeFrames(legs, samples = 80) {
+// A gently rounded route: small quadratic corners remain close to authored spots.
+// Transfer nodes are never rounded; they will receive deliberate choreography in 0.4.2d.
+export function routeFrames(legs, samples = 100) {
     if (!legs.length) return [];
-    const lengths = legs.map(leg => Math.hypot(leg.to.x - leg.from.x, leg.to.y - leg.from.y));
-    const total = lengths.reduce((a, b) => a + b, 0);
-    const frames = [];
-    for (let i = 0; i <= samples; i++) {
-        const t = i / samples;
-        const eased = t * t * (3 - 2 * t);
-        let remaining = eased * total;
-        let index = 0;
-        while (index < legs.length - 1 && remaining > lengths[index]) remaining -= lengths[index++];
-        const leg = legs[index];
-        const f = lengths[index] ? Math.min(1, remaining / lengths[index]) : 1;
-        frames.push({ offset: t, x: leg.from.x + (leg.to.x - leg.from.x) * f,
-            y: leg.from.y + (leg.to.y - leg.from.y) * f,
-            scale: leg.from.scale + (leg.to.scale - leg.from.scale) * f, legIndex: index });
+    const nodes = [legs[0].from, ...legs.map(leg => leg.to)];
+    const pieces = [];
+    let cursor = nodes[0];
+    const point = (a,b,f) => ({ x:a.x+(b.x-a.x)*f, y:a.y+(b.y-a.y)*f,
+        scale:a.scale+(b.scale-a.scale)*f });
+    for (let i=1; i<nodes.length-1; i++) {
+        const prev=nodes[i-1], mid=nodes[i], next=nodes[i+1];
+        const lenIn=Math.hypot(mid.x-prev.x,mid.y-prev.y);
+        const lenOut=Math.hypot(next.x-mid.x,next.y-mid.y);
+        const u=lenIn ? [(mid.x-prev.x)/lenIn,(mid.y-prev.y)/lenIn] : [0,0];
+        const v=lenOut ? [(next.x-mid.x)/lenOut,(next.y-mid.y)/lenOut] : [0,0];
+        const angle=Math.acos(Math.max(-1,Math.min(1,u[0]*v[0]+u[1]*v[1])));
+        const canRound=legs[i-1].to.type==='waypoint' && angle>0.12 && lenIn>0.1 && lenOut>0.1;
+        const radius=canRound ? Math.min(MOTION.cornerRadius,lenIn*0.2,lenOut*0.2)*Math.min(1,angle/(Math.PI/2)) : 0;
+        if (radius>0.01) {
+            const start=point(mid,prev,radius/lenIn), end=point(mid,next,radius/lenOut);
+            pieces.push({a:cursor,b:start,corner:false,legIndex:i-1});
+            pieces.push({a:start,b:end,control:mid,corner:true,legIndex:i});
+            cursor=end;
+        } else { pieces.push({a:cursor,b:mid,corner:false,legIndex:i-1}); cursor=mid; }
+    }
+    pieces.push({a:cursor,b:nodes.at(-1),corner:false,legIndex:legs.length-1});
+    const curve=(p,t) => p.control ? point(point(p.a,p.control,t),point(p.control,p.b,t),t) : point(p.a,p.b,t);
+    // Build a distance-based lookup, with lower effective speed near sharp corners.
+    const samplesPerPiece=20;
+    const path=[];
+    let weighted=0;
+    for (let j=0;j<pieces.length;j++) {
+        const piece=pieces[j];
+        for (let k=0;k<=samplesPerPiece;k++) {
+            if (j && k===0) continue;
+            const at=curve(piece,k/samplesPerPiece);
+            if (path.length) {
+                const prev=path.at(-1);
+                const distance=Math.hypot(at.x-prev.x,at.y-prev.y);
+                weighted+=distance*(piece.corner ? 1/(1-MOTION.cornerSlowdown) : 1);
+            }
+            path.push({...at,weighted,legIndex:piece.legIndex});
+        }
+    }
+    const frames=[];
+    for(let i=0;i<=samples;i++) {
+        const t=i/samples;
+        const eased=t*t*(3-2*t);
+        const target=eased*weighted;
+        let hi=1;
+        while(hi<path.length-1 && path[hi].weighted<target) hi++;
+        const left=path[hi-1]||path[0],right=path[hi];
+        const fraction=right.weighted>left.weighted ? (target-left.weighted)/(right.weighted-left.weighted) : 0;
+        frames.push({offset:t,...point(left,right,fraction),legIndex:right.legIndex});
     }
     return frames;
 }
@@ -123,7 +159,16 @@ export function createMovementView({ world, entities, player }) {
             (plan.arrivals?.[0] || plan.legs?.[0]?.from || plan.departures?.[0]);
         if (!first) return;
         const node = makeOverlay(stage, plan.entityId, entity, first, state);
+        if (node && (plan.arrivals?.length || (plan.mode === 'settle' && !plan.fadeOut))) node.style.opacity = '0';
         if (!node) return;
+        // A plan owns only its own final-state sprite, never other NPCs.
+        // Hide it only after the overlay exists, and restore as soon as this
+        // character finishes (not when the entire movement batch finishes).
+        const originals = Array.from(stage.children).filter(child => child !== node && child.dataset.entity === plan.entityId);
+        for (const original of originals) {
+            original.style.visibility = 'hidden';
+            state.hidden.add(original);
+        }
         const runFade = async (spot, from, to) => {
             const mirror = await preparePose(node, entity, 'front', signal);
             if (signal.aborted) return;
@@ -140,33 +185,38 @@ export function createMovementView({ world, entities, player }) {
             if (!signal.aborted && legs.length) {
                 const samples = routeFrames(legs);
                 const duration = walkDuration(legs);
-                // Pose changes at segment boundaries; position and scale use one
-                // continuous timeline with a single start/end easing envelope.
-                const distances = legs.map(l => Math.hypot(l.to.x-l.from.x,l.to.y-l.from.y));
-                const total = distances.reduce((a,b)=>a+b,0);
-                let covered = 0;
-                for (let i = 0; i < legs.length; i++) {
-                    if (signal.aborted) break;
-                    const mirror = await preparePose(node, entity, legs[i].pose, signal);
-                    if (signal.aborted) break;
-                    const start = total ? covered / total : i / legs.length;
-                    covered += distances[i];
-                    const end = total ? covered / total : (i+1) / legs.length;
-                    // Smoothstep inverse maps distance fractions onto global time.
-                    const inverse = x => { let lo=0,hi=1; for(let k=0;k<20;k++){const m=(lo+hi)/2; if(m*m*(3-2*m)<x)lo=m;else hi=m;}return (lo+hi)/2; };
-                    const t0 = inverse(start), t1 = inverse(end);
-                    const frames = samples.filter(f => f.offset >= t0 && f.offset <= t1);
-                    const segment = [ { offset: 0, ...anchor(legs[i].from, 1, mirror) },
-                        ...frames.map(f => ({ offset: (f.offset-t0)/(t1-t0 || 1), ...anchor(f, 1, mirror) })),
-                        { offset: 1, ...anchor(legs[i].to, 1, mirror) } ];
-                    Object.assign(node.style, anchor(legs[i].from, 1, mirror));
-                    await animate(node, segment, duration * (t1-t0), state);
+                // One animation owns the entire curved route. Pose changes are
+                // scheduled independently and never restart positional easing.
+                const firstMirror = await preparePose(node, entity, legs[0].pose, signal);
+                if (signal.aborted) return;
+                const movementFrames = samples.map(frame => { const {transform, ...rest} = anchor(frame, 1, firstMirror); return rest; });
+                node.style.transform = anchor(legs[0].from,1,firstMirror).transform;
+                const transitions = [];
+                for (let i=1;i<samples.length;i++) {
+                    if (samples[i].legIndex !== samples[i-1].legIndex)
+                        transitions.push({ at:samples[i].offset, pose:legs[samples[i].legIndex].pose });
                 }
+                const poseTask = (async () => {
+                    let previous=0;
+                    for (const transition of transitions) {
+                        await wait((transition.at-previous)*duration,signal);
+                        if (signal.aborted) return;
+                        const mirror=await preparePose(node,entity,transition.pose,signal);
+                        if (!signal.aborted) node.style.transform=anchor(samples.find(f=>f.offset>=transition.at),1,mirror).transform;
+                        previous=transition.at;
+                    }
+                })();
+                await animate(node,movementFrames,duration,state);
+                await poseTask;
             }
             if (!signal.aborted && plan.departures?.length) await runFade(plan.departures.at(-1), 1, 0);
         }
         node.remove();
         state.nodes.delete(node);
+        for (const original of originals) {
+            original.style.visibility = '';
+            state.hidden.delete(original);
+        }
     }
 
     function play(result, previous = new Map()) {
@@ -180,20 +230,17 @@ export function createMovementView({ world, entities, player }) {
         const state = { abort: new AbortController(), animations: new Set(), nodes: new Set(), hidden: new Set() };
         current = state;
         player.setInteraction('MOVEMENT');
-        // Hide final-state sprites BEFORE any async work begins, otherwise the
-        // authoritative refresh exposes arrivals before their fade-in.
-        for (const plan of plans) {
-            for (const node of stage.children) {
-                if (node.dataset.entity === plan.entityId) {
-                    node.style.visibility = 'hidden';
-                    state.hidden.add(node);
-                }
-            }
-        }
+        // Skipped agenda events settle before witnessed walks. Otherwise a
+        // delayed settle can make an unrelated NPC vanish during a long walk.
+        const ordered = [...plans].sort((a,b) => (a.mode === 'settle' ? 0 : 1) - (b.mode === 'settle' ? 0 : 1));
         const chains = new Map();
-        const tasks = plans.map((plan, index) => {
+        const settleTasks = [];
+        const tasks = ordered.map((plan, index) => {
             const previousTask = chains.get(plan.entityId) || Promise.resolve();
-            const task = previousTask.then(() => playPlan(plan, state, Math.min(index * MOTION.staggerMs, 680), stage));
+            const priorSettles = plan.mode === 'walk' ? Promise.allSettled(settleTasks) : Promise.resolve();
+            const task = Promise.all([previousTask, priorSettles]).then(() => playPlan(plan, state,
+                plan.mode === 'settle' ? 0 : Math.min(index * MOTION.staggerMs, 680), stage));
+            if (plan.mode === 'settle') settleTasks.push(task);
             chains.set(plan.entityId, task);
             return task;
         });
