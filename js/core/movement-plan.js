@@ -4,12 +4,23 @@ import { transferActions } from './transfer-plan.js';
 
 const locationKey = node => `${node.scene}/${node.spot}`;
 
+// Presentation policy, independent of individual schedules or characters.
+// A seek is a change of observation time, not a queue of animations to replay.
+export const PRESENTATION_POLICY = Object.freeze({ maxAnimatedAdvanceMinutes: 60 });
+
 export function movementPose(from, to) {
     const dx = to.x - from.x;
     const dy = to.y - from.y; // Stage Y increases toward the viewer.
     if (!Number.isFinite(dx) || !Number.isFinite(dy)) throw new Error('Invalid movement coordinates.');
     if (Math.abs(dx) < 0.00001 && Math.abs(dy) < 0.00001) return 'stationary';
-    // Four directional families, with diagonals preserving near/far perspective.
+    // Stage scale is authored depth. When moving significantly deeper into the
+    // scene, the back must be visible even along a mostly horizontal route.
+    const depth = Number.isFinite(from.scale) && Number.isFinite(to.scale)
+        ? to.scale - from.scale : 0;
+    if (depth < -1 && dy < 0) {
+        return Math.abs(dx) <= Math.abs(dy) * 0.55
+            ? 'back' : `back-three-quarter-${dx > 0 ? 'right' : 'left'}`;
+    }
     if (Math.abs(dx) <= Math.abs(dy) * 0.55) return dy > 0 ? 'front' : 'back';
     if (Math.abs(dy) <= Math.abs(dx) * 0.55) return dx > 0 ? 'right' : 'left';
     return `${dy > 0 ? 'front' : 'back'}-three-quarter-${dx > 0 ? 'right' : 'left'}`;
@@ -34,10 +45,11 @@ function visibleLegs(world, route, scene) {
     return Object.freeze(legs);
 }
 
-// Witness policy: only an advance ending exactly on a movement minute plays a route.
-// Earlier movements settle through short fades at the visible endpoints.
-export function planMovement({ moves, endMinute, scene, world }) {
-    if (!Array.isArray(moves) || !Number.isSafeInteger(endMinute) || !scene || !world?.spot) {
+// Only live boundary events animate. Crossed events are already committed to
+// authoritative state and must never create historical presentation work.
+export function planMovement({ moves, endMinute, startMinute = endMinute, scene, world }) {
+    if (!Array.isArray(moves) || !Number.isSafeInteger(endMinute) ||
+        !Number.isSafeInteger(startMinute) || startMinute > endMinute || !scene || !world?.spot) {
         throw new Error('Invalid movement planning input.');
     }
     const plans = [];
@@ -46,7 +58,11 @@ export function planMovement({ moves, endMinute, scene, world }) {
             throw new Error('Invalid committed movement event.');
         }
         if (move.minute > endMinute) throw new Error('Movement occurs after advance end.');
-        const witnessed = move.minute === endMinute;
+        // Only a live boundary event can be witnessed. Never replay events
+        // crossed by a seek, regardless of how many entities were involved.
+        const witnessed = move.minute === endMinute &&
+            endMinute - startMinute <= PRESENTATION_POLICY.maxAnimatedAdvanceMinutes;
+        if (!witnessed) continue;
         const route = move.route;
         const visitsScene = route.some(step => step.scene === scene);
         if (!visitsScene) continue;
@@ -64,12 +80,6 @@ export function planMovement({ moves, endMinute, scene, world }) {
             }
             plans.push(Object.freeze({ entityId: move.entityId, minute: move.minute, mode: 'walk',
                 actions, legs, arrivals: Object.freeze(arrivals), departures: Object.freeze(departures) }));
-        } else {
-            const fadeOut = move.from.scene === scene ? spotAt(world, move.from) : null;
-            const fadeIn = move.to.scene === scene ? spotAt(world, move.to) : null;
-            // Intermediate scenes have no settled occupant to fade.
-            if (fadeOut || fadeIn) plans.push(Object.freeze({ entityId: move.entityId, minute: move.minute,
-                mode: 'settle', fadeOut, fadeIn }));
         }
     }
     return Object.freeze(plans);
