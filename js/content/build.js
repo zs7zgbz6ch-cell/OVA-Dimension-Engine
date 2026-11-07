@@ -1,6 +1,6 @@
 export const BUILD_INFO = Object.freeze({
-    version: '0.4.2c.2',
-    name: 'MOVEMENT PRESENTATION'
+    version: '0.4.2c.3',
+    name: 'MOVEMENT LIFECYCLE & REFACTOR'
 });
 
 export function buildLabel(){

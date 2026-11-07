@@ -33,7 +33,9 @@ export const ENTITY_MOVEMENT_SPRITES = Object.freeze({
         back: './assets/sprites/rionne-back.png',
         left: './assets/sprites/rionne-front-three-quarter.png',
         'front-three-quarter-left': './assets/sprites/rionne-front-three-quarter.png',
-        'back-three-quarter-left': './assets/sprites/rionne-back-three-quarter.png'
+        'front-three-quarter-right': './assets/sprites/rionne-front-three-quarter-right.png',
+        'back-three-quarter-left': './assets/sprites/rionne-back-three-quarter.png',
+        'back-three-quarter-right': './assets/sprites/rionne-back-three-quarter-right.png'
     }),
     barmaid: Object.freeze({ front: './assets/sprites/barmaid-serving.png' })
 });
