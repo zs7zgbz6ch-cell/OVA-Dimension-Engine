@@ -58,7 +58,7 @@ async function preparePose(node, entity, pose, signal) {
     return { mirror: sprite.mirror };
 }
 
-function createOverlay(stage, entityId, entity, start, state) {
+function createOverlay(stage, entityId, entity, start, state, opacity = 1) {
     const sprite = spriteFor(entity, 'front');
     if (!sprite) return null;
     const node = document.createElement('img');
@@ -67,7 +67,7 @@ function createOverlay(stage, entityId, entity, start, state) {
     node.setAttribute('aria-hidden', 'true');
     node.dataset.movementEntity = entityId;
     node.src = sprite.src;
-    Object.assign(node.style, anchor(start));
+    Object.assign(node.style, anchor(start, opacity));
     stage.append(node);
     state.nodes.add(node);
     return node;
@@ -211,11 +211,11 @@ export function createMovementView({ world, entities, player }) {
         }
     }
 
-    async function playPlan(plan, state, stage) {
+    async function playPlan(plan, state, stage, preparedNode = null) {
         const start = planStart(plan);
         if (!start || state.abort.signal.aborted) return;
         const entity = entities.get(plan.entityId);
-        const node = createOverlay(stage, plan.entityId, entity, start, state);
+        const node = preparedNode || createOverlay(stage, plan.entityId, entity, start, state);
         if (!node) return;
 
         try {
@@ -253,6 +253,24 @@ export function createMovementView({ world, entities, player }) {
         player.setInteraction('MOVEMENT');
         hidePlannedOriginals(stage, plans, state);
 
+        // A walking character must remain visible at the *starting* spot while
+        // other characters settle. The authoritative destination is hidden above,
+        // and the replacement is mounted synchronously, before any async wait.
+        // Arrival fades begin transparent; otherwise the initial pose is visible.
+        const preparedWalks = new Map();
+        const settlingEntities = new Set(
+            plans.filter(plan => plan.mode === 'settle').map(plan => plan.entityId)
+        );
+        for (const plan of plans) {
+            if (plan.mode !== 'walk') continue;
+            const start = planStart(plan);
+            if (!start) continue;
+            const entity = entities.get(plan.entityId);
+            const opacity = plan.arrivals?.length || settlingEntities.has(plan.entityId) ? 0 : 1;
+            const node = createOverlay(stage, plan.entityId, entity, start, state, opacity);
+            if (node) preparedWalks.set(plan, node);
+        }
+
         // Settle missed events before witnessed walks. Per-entity chains retain
         // ownership of the final-position sprite until the last plan finishes.
         const ordered = [...plans].sort((left, right) =>
@@ -270,7 +288,13 @@ export function createMovementView({ world, entities, player }) {
                 : 0;
             const task = Promise.all([previous, priorSettles]).then(async () => {
                 await wait(delay, state.abort.signal);
-                if (!state.abort.signal.aborted) await playPlan(plan, state, stage);
+                if (!state.abort.signal.aborted) {
+                    const preparedNode = preparedWalks.get(plan) || null;
+                    if (preparedNode && settlingEntities.has(plan.entityId) && !plan.arrivals?.length) {
+                        preparedNode.style.opacity = 1;
+                    }
+                    await playPlan(plan, state, stage, preparedNode);
+                }
             });
             if (plan.mode === 'settle') settleTasks.push(task);
             chains.set(plan.entityId, task);
