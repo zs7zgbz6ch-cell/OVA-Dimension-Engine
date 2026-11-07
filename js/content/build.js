@@ -1,5 +1,5 @@
 export const BUILD_INFO = Object.freeze({
-    version: '0.4.2c.1',
+    version: '0.4.2c.2',
     name: 'MOVEMENT PRESENTATION'
 });
 
