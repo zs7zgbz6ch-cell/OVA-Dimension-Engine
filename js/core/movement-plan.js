@@ -2,7 +2,6 @@
 // No DOM, timing side effects, character identities or world mutations.
 
 const locationKey = node => `${node.scene}/${node.spot}`;
-const same = (a, b) => a.scene === b.scene && a.spot === b.spot;
 
 export function movementPose(from, to) {
     const dx = to.x - from.x;
@@ -32,8 +31,6 @@ function visibleLegs(world, route, scene) {
     return Object.freeze(legs);
 }
 
-function freezePlan(plan) { return Object.freeze(plan); }
-
 // Witness policy: only an advance ending exactly on a movement minute plays a route.
 // Earlier movements settle through short fades at the visible endpoints.
 export function planMovement({ moves, endMinute, scene, world }) {
@@ -61,13 +58,13 @@ export function planMovement({ moves, endMinute, scene, world }) {
                 if (i > 0 && route[i - 1].scene !== scene) arrivals.push(spotAt(world, route[i]));
                 if (i < route.length - 1 && route[i + 1].scene !== scene) departures.push(spotAt(world, route[i]));
             }
-            plans.push(freezePlan({ entityId: move.entityId, minute: move.minute, mode: 'walk',
+            plans.push(Object.freeze({ entityId: move.entityId, minute: move.minute, mode: 'walk',
                 legs, arrivals: Object.freeze(arrivals), departures: Object.freeze(departures) }));
         } else {
             const fadeOut = move.from.scene === scene ? spotAt(world, move.from) : null;
             const fadeIn = move.to.scene === scene ? spotAt(world, move.to) : null;
             // Intermediate scenes have no settled occupant to fade.
-            if (fadeOut || fadeIn) plans.push(freezePlan({ entityId: move.entityId, minute: move.minute,
+            if (fadeOut || fadeIn) plans.push(Object.freeze({ entityId: move.entityId, minute: move.minute,
                 mode: 'settle', fadeOut, fadeIn }));
         }
     }
