@@ -1,4 +1,4 @@
-OVA-Dimension 0.4.2c.3 — Movement Lifecycle & Refactor (TEST CANDIDATE)
+OVA-Dimension 0.4.2c.4 — Movement Waiting Visibility (TEST CANDIDATE)
 
 Complete project based on 0.4.2c.2. No world coordinates, agendas,
 simulation semantics, or save namespaces were changed.
@@ -32,7 +32,11 @@ GitHub changed/new file upload order (index.html LAST):
 13 sw.js
 14 index.html (LAST)
 
-Commit: fix: 0.4.2c.3 movement lifecycle
+Commit: fix: 0.4.2c.4 waiting sprite visibility
 
 Test on iPhone at 07:00, 09:00, 10:00, 18:00, then day two 07:00.
 Do not accept until visual tests pass and the independent code audit is done.
+
+0.4.2c.4: Mount starting-position walking overlays before any settle fades.
+The final-position sprites stay hidden while a walker waits for other NPCs.
+No changes to movement geometry, walking pace, or agendas.
