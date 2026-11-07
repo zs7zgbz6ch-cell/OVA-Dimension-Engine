@@ -1,3 +1,7 @@
+OVA-Dimension 0.4.2c.1 — Movement Presentation Correction (testing candidate)
+
+Continuous route easing, longer distance-based pace, sprite handoff for fades, and predecoded pose changes. No world, agenda, save, or Lab data changes.
+
 OVA-Dimension 0.4.2c — Movement Renderer (testing candidate)
 
 First visible movement presentation. Simulation and saved world state remain authoritative.
