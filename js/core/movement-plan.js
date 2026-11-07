@@ -1,3 +1,4 @@
+import { transferActions } from './transfer-plan.js';
 // Pure, scene-local presentation plans derived from committed simulation facts.
 // No DOM, timing side effects, character identities or world mutations.
 
@@ -24,6 +25,8 @@ function visibleLegs(world, route, scene) {
     const legs = [];
     for (let i = 1; i < route.length; i++) {
         if (route[i - 1].scene !== scene || route[i].scene !== scene) continue;
+        if (route[i].movement === 'fade' ||
+            world.connectionMovement?.(route[i - 1], route[i]) === 'fade') continue;
         const from = spotAt(world, route[i - 1]);
         const to = spotAt(world, route[i]);
         legs.push(Object.freeze({ from, to, pose: movementPose(from, to), smoothArrival: to.type === 'waypoint' }));
@@ -48,6 +51,7 @@ export function planMovement({ moves, endMinute, scene, world }) {
         const visitsScene = route.some(step => step.scene === scene);
         if (!visitsScene) continue;
         if (witnessed) {
+            const actions = transferActions(world, route, scene, movementPose);
             const legs = visibleLegs(world, route, scene);
             // A cross-scene hop is represented by its boundary nodes, never
             // interpolated across two unrelated background coordinate systems.
@@ -59,7 +63,7 @@ export function planMovement({ moves, endMinute, scene, world }) {
                 if (i < route.length - 1 && route[i + 1].scene !== scene) departures.push(spotAt(world, route[i]));
             }
             plans.push(Object.freeze({ entityId: move.entityId, minute: move.minute, mode: 'walk',
-                legs, arrivals: Object.freeze(arrivals), departures: Object.freeze(departures) }));
+                actions, legs, arrivals: Object.freeze(arrivals), departures: Object.freeze(departures) }));
         } else {
             const fadeOut = move.from.scene === scene ? spotAt(world, move.from) : null;
             const fadeIn = move.to.scene === scene ? spotAt(world, move.to) : null;

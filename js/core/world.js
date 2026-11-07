@@ -3,6 +3,8 @@ export class World {
         this.data = data;
         this.nodes = new Map();
         this.edges = new Map();
+        this.connectionTypes = new Map();
+        this.toFrom = new Map();
 
         for (const [sceneId, scene] of Object.entries(data.scenes)) {
             for (const spot of scene.spots) {
@@ -12,7 +14,7 @@ export class World {
             }
         }
 
-        for (const { a, b } of data.connections) {
+        for (const { a, b, movement = 'walk' } of data.connections) {
             const keyA = this.key(a.scene, a.spot);
             const keyB = this.key(b.scene, b.spot);
 
@@ -20,13 +22,46 @@ export class World {
                 throw new Error(`Bad World connection: ${keyA} ↔ ${keyB}`);
             }
 
+            const first = this.nodes.get(keyA);
+            const second = this.nodes.get(keyB);
+            if (first.type === 'tofrom' || second.type === 'tofrom') {
+                if (first.type === second.type ||
+                    (first.type !== 'transfer' && second.type !== 'transfer') ||
+                    first.scene !== second.scene || movement !== 'walk') {
+                    throw new Error(`Invalid To/From connection: ${keyA} ↔ ${keyB}`);
+                }
+                const transfer = first.type === 'transfer' ? keyA : keyB;
+                const marker = first.type === 'tofrom' ? first : second;
+                if (this.toFrom.has(transfer)) throw new Error(`Duplicate To/From: ${transfer}`);
+                this.toFrom.set(transfer, marker);
+                continue;
+            }
+            if (movement !== 'walk' && movement !== 'fade') {
+                throw new Error(`Unknown connection movement: ${movement}`);
+            }
             this.edges.get(keyA).add(keyB);
             this.edges.get(keyB).add(keyA);
+            this.connectionTypes.set(this.edgeKey(keyA, keyB), movement);
         }
     }
 
     key(sceneId, spotId) {
         return `${sceneId}/${spotId}`;
+    }
+
+    edgeKey(first, second) {
+        return [first, second].sort().join(' ↔ ');
+    }
+
+    connectionMovement(from, to) {
+        return this.connectionTypes.get(this.edgeKey(
+            this.key(from.scene, from.spot), this.key(to.scene, to.spot)
+        )) || null;
+    }
+
+    transferMarker(scene, spot) {
+        const marker = this.toFrom.get(this.key(scene, spot));
+        return marker ? { ...marker } : null;
     }
 
     scenes() {
@@ -86,7 +121,7 @@ export class World {
 }
 
 export async function loadWorld() {
-    const response = await fetch("./world/world-stage.json?v=042c4", {
+    const response = await fetch("./world/world-stage.json?v=042d", {
         cache: "no-store"
     });
 

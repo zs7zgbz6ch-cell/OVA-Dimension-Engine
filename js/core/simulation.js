@@ -4,7 +4,7 @@ function committedMovement(navigation, entityId, minute, destination) {
     // Capture only committed navigation facts; callers cannot mutate the world
     // or another observer's event through the returned payload.
     const route = navigation.route.map(step => Object.freeze({
-        scene: step.scene, spot: step.spot, type: step.type
+        scene: step.scene, spot: step.spot, type: step.type, movement: step.movement ?? null
     }));
     return Object.freeze({
         entityId,

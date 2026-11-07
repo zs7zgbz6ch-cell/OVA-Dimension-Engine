@@ -31,10 +31,15 @@ export class Navigator {
             );
         }
 
-        return path.map(node => ({
+        return path.map((node, index) => ({
             scene: node.scene,
             spot: node.id,
-            type: node.type
+            type: node.type,
+            // Movement belongs to the incoming edge, not the destination spot.
+            movement: index === 0 ? null : this.world.connectionMovement?.(
+                { scene: path[index - 1].scene, spot: path[index - 1].id },
+                { scene: node.scene, spot: node.id }
+            )
         }));
     }
 
