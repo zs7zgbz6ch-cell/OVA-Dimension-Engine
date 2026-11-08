@@ -7,6 +7,9 @@ import { placePersonMenu } from './person-menu.js';
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+// Keep speech bubbles inside the visible viewport.
+const clamp = (value, minimum, maximum) => Math.min(Math.max(value, minimum), maximum);
+
 export function mountInteractions({ world, player, entities, simulation, say }) {
     const root = document.querySelector('#personInteraction');
     const menu = root.querySelector('.person-menu');
