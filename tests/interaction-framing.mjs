@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+const css = read('css/ovad.css');
+const html = read('index.html');
+assert.match(css, /height:180%;\s*bottom:-74%/);
+assert.match(css, /height:91%;\s*bottom:37px/);
+assert.match(css, /height:calc\(100dvh - 30px\)/);
+assert.match(css, /height:calc\(100% - 88px\)/);
+assert.match(html, /class="person-observe-back"[^>]*><svg viewBox="0 0 48 48"/);
+assert.doesNotMatch(html, /class="person-observe-back"[^>]*>‹/);
+console.log('PASS: reusable card framing, portrait viewport and curved back icon');
