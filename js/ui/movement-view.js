@@ -345,7 +345,7 @@ export function createMovementView({ world, entities, player }) {
                 ? Promise.allSettled(settleTasks)
                 : Promise.resolve();
             const delay = plan.mode === 'walk'
-                ? Math.min(walkIndex++ * MOTION.staggerMs, 680)
+                ? Math.min(walkIndex++ * MOTION.staggerMs, MOTION.maxStaggerMs)
                 : 0;
             const task = Promise.all([previous, priorSettles]).then(async () => {
                 await wait(delay, state.abort.signal);
