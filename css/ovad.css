@@ -162,3 +162,65 @@
 
 /* Dialogue advances only when its balloon is tapped. */
 .person-speech{pointer-events:auto}
+
+
+/* 0.4.2e.5 — Reusable character-card choreography.
+   Interact and Observe animate the SAME image; no artwork swaps. */
+.person-card {
+    width:min(27vw,365px);
+    height:92vh;
+    max-height:690px;
+    transition:width 320ms ease,height 320ms ease;
+}
+.person-card.observing {
+    width:min(31.5vw,425px);
+    height:96vh;
+}
+.person-portrait {
+    transition:height 380ms cubic-bezier(.2,.8,.2,1),
+               bottom 380ms cubic-bezier(.2,.8,.2,1);
+}
+.person-card:not(.observing) .person-portrait {
+    height:145%;
+    bottom:-52%;
+}
+.person-card.observing .person-portrait {
+    height:96%;
+    bottom:0;
+}
+.person-observe-back { min-height:31px; padding:0 17px; bottom:17px; }
+.person-card.observing .person-rotate-hint {
+    bottom:22px;
+    left:61%;
+    font-size:clamp(9px,.86vw,12px);
+    letter-spacing:.10em;
+}
+.person-speech:not(.card-speech)::after {
+    left:var(--speech-pointer-x,36px);
+}
+@media (orientation:portrait) {
+    .person-interaction.portrait-observe .person-card.observing {
+        top:50%;
+        height:calc(100dvh - max(12px, env(safe-area-inset-top)) - max(12px, env(safe-area-inset-bottom)));
+        width:calc(100vw - max(20px, env(safe-area-inset-left)) - max(20px, env(safe-area-inset-right)));
+        max-height:none;
+    }
+    .person-interaction.portrait-observe .person-card.observing .person-portrait {
+        height:calc(92% - 48px);
+        bottom:48px;
+    }
+    .person-interaction.portrait-observe .person-rotate-hint {
+        left:50%;
+        bottom:17px;
+        width:100%;
+        text-align:center;
+        font-size:0;
+    }
+    .person-interaction.portrait-observe .person-rotate-hint::after {
+        font-size:clamp(12px,3vw,15px);
+        letter-spacing:.10em;
+    }
+}
+@media (prefers-reduced-motion:reduce) {
+    .person-card,.person-portrait {transition:none}
+}
