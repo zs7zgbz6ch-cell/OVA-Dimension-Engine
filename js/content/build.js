@@ -1,6 +1,6 @@
 export const BUILD_INFO = Object.freeze({
-    version: '0.4.2d.1',
-    name: 'MOVEMENT CORRECTIONS'
+    version: '0.4.2e',
+    name: 'INTERACTION FOUNDATION'
 });
 
 export function buildLabel(){
