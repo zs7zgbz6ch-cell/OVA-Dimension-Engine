@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+const read = name => readFileSync(new URL(`../${name}`, import.meta.url), 'utf8');
+const ui = read('js/ui/interactions.js');
+const helper = ui.match(/^const clamp = .*;$/m)?.[0];
+assert.ok(helper, 'Scene speech positioning must have a clamp helper');
+const clamp = vm.runInNewContext(`${helper}\nclamp`);
+assert.equal(clamp(-20, 12, 400), 12);
+assert.equal(clamp(80, 12, 400), 80);
+assert.equal(clamp(800, 12, 400), 400);
+assert.match(ui, /const left = clamp\(/);
+assert.match(ui, /const top = clamp\(/);
+assert.match(ui, /speech\.style\.setProperty\('--speech-pointer-x', `\$\{clamp\(/);
+const authored = read('js/content/interactions.js');
+assert.match(authored, /There's always something happening around this Tavern/);
+assert.match(authored, /Oops, I just dropped a glass!/);
+console.log('PASS: speech positioning helper and authored dialogue retained');

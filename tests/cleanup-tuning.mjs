@@ -29,6 +29,6 @@ test('dialogue precedence and stable cursor keys survive duplicate context refer
 test('cache and import map include tuning module', () => {
     const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
     const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
-    assert.match(html, /js\/content\/tuning\.js\?v=042e10/);
-    assert.match(sw, /js\/content\/tuning\.js\?v=042e10/);
+    assert.match(html, /js\/content\/tuning\.js\?v=042e11/);
+    assert.match(sw, /js\/content\/tuning\.js\?v=042e11/);
 });
