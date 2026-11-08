@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#050303">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./assets/icon-192.png">
-  <link rel="stylesheet" href="./css/ovad.css?v=042e">
+  <link rel="stylesheet" href="./css/ovad.css?v=042e1">
   <title>OVA-Dimension</title>
 </head>
 <body>
@@ -119,7 +119,6 @@
 
   <section id="personInteraction" class="person-interaction interactive" data-interactive aria-label="Person interaction">
     <div class="person-menu" hidden>
-      <div class="person-menu-name"></div>
       <button type="button" data-person-action="primary">TALK</button>
       <button type="button" data-person-action="check">CHECK</button>
       <button type="button" data-person-action="leave">LEAVE</button>
@@ -136,6 +135,7 @@
         <button type="button" disabled>STATUS</button>
         <button type="button" data-person-action="leave">LEAVE</button>
       </div>
+      <div class="person-rotate-hint" aria-hidden="true">ROTATE FOR PORTRAIT VIEW</div>
       <button class="person-observe-back" type="button" data-person-action="back" hidden>BACK</button>
     </div>
     <div class="person-speech" hidden><span class="person-speech-text"></span></div>
@@ -172,38 +172,38 @@
 <script type="importmap">
 {
   "imports": {
-    "./js/content/build.js": "./js/content/build.js?v=042e",
-    "./js/content/data.js": "./js/content/data.js?v=042e",
-    "./js/content/interactions.js": "./js/content/interactions.js?v=042e",
-    "./js/core/interaction-content.js": "./js/core/interaction-content.js?v=042e",
-    "./js/ui/interactions.js": "./js/ui/interactions.js?v=042e",
-    "./js/content/game.js": "./js/content/game.js?v=042e",
-    "./js/core/autosave.js": "./js/core/autosave.js?v=042e",
-    "./js/core/agenda.js": "./js/core/agenda.js?v=042e",
-    "./js/core/dimension-gear.js": "./js/core/dimension-gear.js?v=042e",
-    "./js/core/entities.js": "./js/core/entities.js?v=042e",
-    "./js/core/movement-plan.js": "./js/core/movement-plan.js?v=042e",
-    "./js/core/transfer-plan.js": "./js/core/transfer-plan.js?v=042e",
-    "./js/core/route-path.js": "./js/core/route-path.js?v=042e",
-    "./js/core/navigation.js": "./js/core/navigation.js?v=042e",
-    "./js/core/presence.js": "./js/core/presence.js?v=042e",
-    "./js/core/player.js": "./js/core/player.js?v=042e",
-    "./js/core/save-slots.js": "./js/core/save-slots.js?v=042e",
-    "./js/core/save.js": "./js/core/save.js?v=042e",
-    "./js/core/simulation.js": "./js/core/simulation.js?v=042e",
-    "./js/core/travel.js": "./js/core/travel.js?v=042e",
-    "./js/core/world.js": "./js/core/world.js?v=042e",
-    "./js/main.js": "./js/main.js?v=042e",
-    "./js/ui/dev-hud.js": "./js/ui/dev-hud.js?v=042e",
-    "./js/ui/hold-input.js": "./js/ui/hold-input.js?v=042e",
-    "./js/ui/movement-view.js": "./js/ui/movement-view.js?v=042e",
-    "./js/ui/menu.js": "./js/ui/menu.js?v=042e",
-    "./js/ui/save-menu.js": "./js/ui/save-menu.js?v=042e",
-    "./js/ui/scene-view.js": "./js/ui/scene-view.js?v=042e",
-    "./js/ui/travel-view.js": "./js/ui/travel-view.js?v=042e"
+    "./js/content/build.js": "./js/content/build.js?v=042e1",
+    "./js/content/data.js": "./js/content/data.js?v=042e1",
+    "./js/content/interactions.js": "./js/content/interactions.js?v=042e1",
+    "./js/core/interaction-content.js": "./js/core/interaction-content.js?v=042e1",
+    "./js/ui/interactions.js": "./js/ui/interactions.js?v=042e1",
+    "./js/content/game.js": "./js/content/game.js?v=042e1",
+    "./js/core/autosave.js": "./js/core/autosave.js?v=042e1",
+    "./js/core/agenda.js": "./js/core/agenda.js?v=042e1",
+    "./js/core/dimension-gear.js": "./js/core/dimension-gear.js?v=042e1",
+    "./js/core/entities.js": "./js/core/entities.js?v=042e1",
+    "./js/core/movement-plan.js": "./js/core/movement-plan.js?v=042e1",
+    "./js/core/transfer-plan.js": "./js/core/transfer-plan.js?v=042e1",
+    "./js/core/route-path.js": "./js/core/route-path.js?v=042e1",
+    "./js/core/navigation.js": "./js/core/navigation.js?v=042e1",
+    "./js/core/presence.js": "./js/core/presence.js?v=042e1",
+    "./js/core/player.js": "./js/core/player.js?v=042e1",
+    "./js/core/save-slots.js": "./js/core/save-slots.js?v=042e1",
+    "./js/core/save.js": "./js/core/save.js?v=042e1",
+    "./js/core/simulation.js": "./js/core/simulation.js?v=042e1",
+    "./js/core/travel.js": "./js/core/travel.js?v=042e1",
+    "./js/core/world.js": "./js/core/world.js?v=042e1",
+    "./js/main.js": "./js/main.js?v=042e1",
+    "./js/ui/dev-hud.js": "./js/ui/dev-hud.js?v=042e1",
+    "./js/ui/hold-input.js": "./js/ui/hold-input.js?v=042e1",
+    "./js/ui/movement-view.js": "./js/ui/movement-view.js?v=042e1",
+    "./js/ui/menu.js": "./js/ui/menu.js?v=042e1",
+    "./js/ui/save-menu.js": "./js/ui/save-menu.js?v=042e1",
+    "./js/ui/scene-view.js": "./js/ui/scene-view.js?v=042e1",
+    "./js/ui/travel-view.js": "./js/ui/travel-view.js?v=042e1"
   }
 }
   </script>
-<script type="module" src="./js/main.js?v=042e"></script>
+<script type="module" src="./js/main.js?v=042e1"></script>
 </body>
 </html>

@@ -37,3 +37,13 @@ iPhone test:
 
 GitHub: upload changed/new files with sw.js before index.html;
 index.html last. Always upload complete paths.
+
+0.4.2e.1 — Interaction Presentation Polish (test candidate)
+- Restores the original 853x1843 transparent Rionne character-card portrait.
+- Narrows the landscape card and gives Observe a wider framed view.
+- Adds artwork boop on taps in both Card and Observe (no time cost).
+- Removes the Check panel; text floats above the scene and fades upward.
+- Compacts and ornaments the three-option person menu; removes its name header.
+- Restores the subtle Observe orientation hint (landscape only).
+- No slide entrance, no magnifier yet, no changes to agenda or interaction timing.
+- The existing player lock and +5-minute Check/Talk completion remain authoritative.
