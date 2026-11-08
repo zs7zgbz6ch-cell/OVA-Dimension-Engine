@@ -1,23 +1,26 @@
-# OVA-Dimension 0.4.2e.9 — Engine Cleanup 1
+# OVA-Dimension 0.4.2e.10 — Engine Cleanup 2
 
-**Status:** iPhone testing candidate, not yet accepted. Complete game repository snapshot.
+**Status:** iPhone testing candidate. Full game snapshot.
 
 ## Scope
 
-- Move existing motion and transfer timing defaults into `js/content/tuning.js`.
-- Re-export the same constants from their previous modules to preserve callers and tests.
-- Replace the movement view's numeric stagger cap with `MOTION.maxStaggerMs` (same value).
-- Make dialogue precedence and cursor keys explicit in `resolveInteraction`, including when authored contexts share an object.
-- Add regression tests. No intentional gameplay, layout, or asset changes.
+- Correct the displayed build label to 0.4.2e.10 (the previous release still displayed e.6).
+- Extract reusable alpha-aware portrait hit-testing into `js/ui/alpha-hit.js`.
+- Extract viewport-aware person menu placement into `js/ui/person-menu.js`.
+- Centralize existing interaction timing and layout defaults in `js/content/tuning.js`.
+- Keep character-card choreography, Observe framing, dialogue flow, simulation time costs, and authored content unchanged.
+- Update import map, PWA cache, and source-shape tests for the moved responsibilities.
+
+**Not included:** the larger character-card/dialogue controller split, movement legacy-plan removal, or changes to game content. These remain separate cleanup steps.
 
 ## Installation
 
-Upload the changed files in the listed order, retaining paths; upload `sw.js` before `index.html`, and `index.html` last. The full ZIP includes unchanged assets and files. Restart/reload the iPhone PWA to update its service-worker cache.
+Upload changed files with their directories intact, `sw.js` before root `index.html`, and root `index.html` last. Refresh/reopen the installed PWA. The ZIP includes unchanged files.
 
-## iPhone checks
+## iPhone regression checklist
 
-Verify NPC dialogue cycles, character Talk and Check, movement cornering and stagger, walking and fading transfers, card/Observe/portrait layouts, and reload/offline startup. Report any regression before accepting this release.
+Verify e.10 appears in the build label; test person menu positioning, transparent sprite taps, card opening and Observe, Talk and Check, portrait rotation, dialogue tap-to-advance and blocking, and walking/fade transfers. Do not promote to stable until checked.
 
-## Next cleanup candidates (not included)
+## Documentation
 
-Split the interaction controller into focused modules, then review old planner compatibility paths and README duplication. No removal of compatibility code in this release.
+`README.md` is authoritative; `README.txt` is the concise mobile companion.
