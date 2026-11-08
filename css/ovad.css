@@ -81,3 +81,39 @@
 .scene-actors{position:absolute;inset:0;pointer-events:none}
 .scene-actor{position:absolute;width:auto;max-width:none;transform:translate(-50%,-100%);transform-origin:50% 100%;object-fit:contain;pointer-events:none;user-select:none}
 .scene-actor-fallback{position:absolute;color:var(--gold);font-size:20px;pointer-events:none}
+
+/* 0.4.2e · Shared person interactions; all scene people use one input layer. */
+.scene-actors .scene-actor,.scene-actors .scene-actor-fallback,.movement-actor{pointer-events:auto;cursor:pointer;touch-action:manipulation}
+.person-interaction{position:fixed;inset:0;z-index:6800;pointer-events:none;font-family:Georgia,'Times New Roman',serif}
+.person-interaction.open{pointer-events:auto}
+.person-interaction[hidden],.person-interaction [hidden]{display:none!important}
+.person-menu{position:fixed;width:190px;padding:12px;border:1px solid rgba(229,187,111,.72);border-radius:15px;background:linear-gradient(150deg,rgba(37,21,13,.96),rgba(15,9,7,.97));box-shadow:0 15px 40px #0009;backdrop-filter:blur(8px)}
+.person-menu-name{color:#e8c994;letter-spacing:.2em;font-size:10px;text-align:center;margin:2px 0 10px}
+.person-menu button,.person-card-actions button,.person-observe-back{display:block;width:100%;margin:5px 0;border:1px solid rgba(226,181,104,.56);border-radius:25px;background:rgba(21,11,8,.83);color:#f4e2c8;letter-spacing:.14em;font-size:12px;min-height:35px}
+.person-menu button:active,.person-card-actions button:active{background:rgba(128,81,39,.7)}
+.person-card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,56vw);height:min(94vh,690px);border:1px solid rgba(235,191,117,.8);border-radius:23px;overflow:hidden;background:#20120c;box-shadow:0 15px 65px #0009}
+.person-interaction.with-card:before{content:'';position:absolute;inset:0;background:rgba(0,0,0,.38);backdrop-filter:blur(3px)}
+.person-card-scene{position:absolute;inset:0;background-position:center;background-size:cover;filter:brightness(.7)}
+.person-card-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(9,5,4,.5),transparent 35%,rgba(9,5,4,.1) 65%,rgba(9,5,4,.76))}
+.person-portrait{position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:94%;max-width:95%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 5px 12px #0006);pointer-events:none}
+.person-card-head{position:absolute;top:19px;left:24px;z-index:1;text-shadow:0 2px 8px #000}
+.person-card-name{font-size:24px;letter-spacing:.19em}
+.person-card-subtitle{font-size:9px;letter-spacing:.2em;color:#ead2a9;margin-top:4px}
+.person-card-close{position:absolute;z-index:2;right:15px;top:15px;width:37px;height:37px;border-radius:50%;border:1px solid #d7aa6a99;background:#1b0e0bb8;color:#f7e5c9;font-size:23px}
+.person-card-actions{position:absolute;z-index:1;bottom:13px;left:14px;right:14px;display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
+.person-card-actions button{margin:0;min-height:37px}
+.person-card-actions button:last-child{grid-column:1/-1}
+.person-card-actions button:disabled{opacity:.42;cursor:default}
+.person-card.observing .person-portrait{height:98%;max-width:99%}
+.person-observe-back{position:absolute;z-index:2;bottom:14px;left:15px;width:auto;padding:0 23px}
+.person-speech{position:fixed;z-index:3;width:min(340px,85vw);min-height:75px;padding:18px 20px;border:1px solid #e3ba78;border-radius:24px;background:rgba(23,12,9,.96);box-shadow:0 10px 30px #0008;color:#f5e5cc;font-size:19px;line-height:1.4;font-style:italic;pointer-events:none}
+.person-speech:after{content:'';position:absolute;bottom:-10px;left:36px;width:17px;height:17px;background:#21120d;border-right:1px solid #e3ba78;border-bottom:1px solid #e3ba78;transform:rotate(45deg)}
+.person-speech.card-speech{left:calc(50% + min(210px,28vw) - 6px);top:30%;width:min(300px,28vw);font-size:clamp(12px,1.5vw,19px)}
+.person-speech.card-speech:after{left:-10px;top:28px;bottom:auto;border:0;border-left:1px solid #e3ba78;border-bottom:1px solid #e3ba78}
+.person-observation{position:absolute;left:50%;top:42%;transform:translate(-50%,0);width:min(640px,78vw);padding:20px 25px;text-align:center;font-size:clamp(16px,2.2vw,24px);font-style:italic;line-height:1.5;color:#f9e9cf;text-shadow:0 2px 9px #000;background:rgba(23,12,9,.86);border:1px solid #d9ad61a8;border-radius:22px;box-shadow:0 12px 40px #0008;animation:observationIn .24s ease-out both}
+.person-observation.leaving{animation:observationOut .6s ease-in forwards}
+@keyframes observationIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes observationOut{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-35px)}}
+@media(max-height:430px){.person-card{height:95vh;width:min(360px,52vw)}.person-card-name{font-size:20px}.person-card-actions button{min-height:29px;font-size:10px}.person-card-actions{gap:3px 8px}.person-speech.card-speech{top:20%}}
+@media(orientation:portrait){.person-interaction.with-card{z-index:10010}.person-card{width:94vw;height:88dvh;top:50%}.person-speech.card-speech{left:7vw;top:auto;bottom:12%;width:86vw}.person-card.observing{height:92dvh}body:has(.person-interaction.portrait-observe) .orientation-guard{display:none}.person-interaction.portrait-observe{z-index:10010}}
+@media(prefers-reduced-motion:reduce){.person-observation,.person-observation.leaving{animation:none}}
