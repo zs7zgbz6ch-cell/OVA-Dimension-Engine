@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const css = readFileSync(new URL('../css/ovad.css', import.meta.url), 'utf8');
+const js = readFileSync(new URL('../js/ui/interactions.js', import.meta.url), 'utf8');
+assert.match(js, /const CHECK_ENTER_MS = 180/);
+assert.match(js, /await delay\(CHECK_ENTER_MS\)/);
+assert.ok(js.indexOf('await delay(CHECK_ENTER_MS)') < js.indexOf('observation.hidden = false;', js.indexOf('function showCheck()')));
+assert.match(css, /\.person-observation\{[^}]*bottom:12%/);
+assert.ok(css.includes("translate(-50%,35px)"));
+assert.match(css, /\.person-portrait\{[^}]*height:137%/);
+assert.match(css, /\.person-card\.observing \.person-portrait\{height:98%/);
+assert.match(css, /height:calc\(100dvh - env\(safe-area-inset-top\)/);
+assert.doesNotMatch(css, /\.person-menu:before/);
+console.log('Interaction layout checks passed');
