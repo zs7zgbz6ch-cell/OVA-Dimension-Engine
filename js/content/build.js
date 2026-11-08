@@ -1,6 +1,6 @@
 export const BUILD_INFO = Object.freeze({
-    version: '0.4.2e.5',
-    name: 'CHARACTER CARD POLISH'
+    version: '0.4.2e.6',
+    name: 'INTERACTION POLISH'
 });
 
 export function buildLabel(){
