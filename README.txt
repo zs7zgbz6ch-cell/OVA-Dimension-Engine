@@ -56,3 +56,8 @@ index.html last. Always upload complete paths.
 - The card backdrop dismisses the card; portrait boops require a nontransparent pixel.
 - Dialogue remains modal and cannot be dismissed by tapping the card backdrop.
 - Portrait Observe fills the available viewport and shows a rotation hint.
+
+0.4.2e.5 · Character choreography
+- Card pops from selected actor position; Observe smoothly widens and zooms the same portrait.
+- Portrait Observe reserves space for its rotate hint and respects safe areas.
+- Dialogue pointer follows the actor anchor while the balloon stays on screen.
