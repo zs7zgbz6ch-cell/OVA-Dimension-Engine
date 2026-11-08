@@ -29,6 +29,8 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
     let selection = null;
     let dialogueFromCard = false;
     let finishing = false;
+    let portraitPixels = null;
+    let portraitSource = null;
 
     function resetVisuals() {
         menu.hidden = true;
@@ -79,10 +81,37 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
             { transform: 'translateX(-50%) scale(1)' }
         ], { duration: BOOP_MS, easing: 'ease-out' });
     }
+    // Alpha-aware hit testing: transparent pixels of a portrait are not interactive.
+    // The canvas is only a cached mask; it never changes or redraws the artwork.
+    function portraitHit(event) {
+        if (event.target !== portrait || !portrait.complete || !portrait.naturalWidth) return false;
+        if (portraitSource !== portrait.currentSrc) {
+            portraitSource = portrait.currentSrc;
+            portraitPixels = null;
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = portrait.naturalWidth;
+                canvas.height = portrait.naturalHeight;
+                const context = canvas.getContext('2d', { willReadFrequently: true });
+                context.drawImage(portrait, 0, 0);
+                portraitPixels = context.getImageData(0, 0, canvas.width, canvas.height);
+            } catch (error) {
+                // If a browser denies pixel access, keep the image interactive.
+                return true;
+            }
+        }
+        if (!portraitPixels) return true;
+        const rect = portrait.getBoundingClientRect();
+        const x = Math.floor((event.clientX - rect.left) * portraitPixels.width / rect.width);
+        const y = Math.floor((event.clientY - rect.top) * portraitPixels.height / rect.height);
+        if (x < 0 || y < 0 || x >= portraitPixels.width || y >= portraitPixels.height) return false;
+        return portraitPixels.data[(y * portraitPixels.width + x) * 4 + 3] > 24;
+    }
+
     function placeMenu(rect) {
-        const width = 166;
+        const width = 148;
         menu.style.left = `${clamp(rect.left + rect.width / 2 - width / 2, 12, innerWidth - width - 12)}px`;
-        menu.style.top = `${clamp(rect.bottom + 8, 12, innerHeight - 162)}px`;
+        menu.style.top = `${clamp(rect.bottom + 8, 12, innerHeight - 148)}px`;
     }
     function start(person, node) {
         if (!player.isFree || !node || !person || person.state.location.scene !== player.sceneId) return;
@@ -104,7 +133,10 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
         card.hidden = false;
         root.classList.add('with-card');
         root.querySelector('.person-card-name').textContent = current.name.toUpperCase();
-        root.querySelector('.person-card-subtitle').textContent = content.subtitle || '';
+        const location = sceneMeta(world, player.sceneId);
+        root.querySelector('.person-card-subtitle').textContent = location.title.toUpperCase();
+        portraitPixels = null;
+        portraitSource = null;
         portrait.src = content.portrait;
         cardScene.style.backgroundImage = `url("${sceneMeta(world, player.sceneId).image}")`;
         root.querySelector('.person-card-actions').hidden = false;
@@ -200,11 +232,17 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
     root.addEventListener('pointerdown', event => event.stopPropagation());
     root.addEventListener('click', event => {
         event.stopPropagation();
-        if (state === 'text') { advanceText(); return; }
+        if (state === 'text') {
+            if (speech.contains(event.target)) advanceText();
+            return;
+        }
         if (state === 'check') return;
         const action = event.target.closest('[data-person-action]')?.dataset.personAction;
         if (!action) {
-            if ((state === 'card' || state === 'observe') && event.target === portrait) boopPortrait();
+            if (state === 'card' || state === 'observe') {
+                if (portraitHit(event)) boopPortrait();
+                else if (event.target === root) complete();
+            } else if (state === 'menu' && event.target === root) complete();
             return;
         }
         if (action === 'leave') complete();
