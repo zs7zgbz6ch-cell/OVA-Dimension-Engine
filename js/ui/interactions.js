@@ -4,6 +4,7 @@ import { sceneMeta } from './scene-view.js';
 
 const TIME_COST_MINUTES = 5;
 const TEXT_CHARACTERS_PER_SECOND = 35;
+const CHECK_ENTER_MS = 180;
 const CHECK_HOLD_MS = 2000;
 const CHECK_EXIT_MS = 600;
 const BOOP_MS = 220;
@@ -127,11 +128,14 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
         card.hidden = true;
         root.classList.remove('with-card');
         observation.textContent = selected.lines[0];
-        observation.hidden = false;
+        observation.hidden = true;
         observation.classList.remove('leaving');
-        // The entire presentation owns input until the final fade has ended.
+        // Hold the input lock through the entrance delay and the entire exit.
         const identity = current;
         (async () => {
+            await delay(CHECK_ENTER_MS);
+            if (state !== 'check' || current !== identity) return;
+            observation.hidden = false;
             await delay(CHECK_HOLD_MS);
             if (state !== 'check' || current !== identity) return;
             observation.classList.add('leaving');
