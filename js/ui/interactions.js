@@ -67,10 +67,21 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
             { transform: 'translate(-50%,-100%) scale(1)', filter: 'brightness(1)' }
         ], { duration: BOOP_MS, easing: 'ease-out' });
     }
+    // The card artwork has a different transform origin than a scene sprite.
+    // Animate the image itself without modifying its resting layout.
+    function boopPortrait() {
+        if (!portrait.animate) return;
+        portrait.animate([
+            { transform: 'translateX(-50%) scale(1)' },
+            { transform: 'translateX(-50%) scale(1.045,.965)', offset: .38 },
+            { transform: 'translateX(-50%) scale(.99,1.018)', offset: .72 },
+            { transform: 'translateX(-50%) scale(1)' }
+        ], { duration: BOOP_MS, easing: 'ease-out' });
+    }
     function placeMenu(rect) {
-        const width = 190;
+        const width = 166;
         menu.style.left = `${clamp(rect.left + rect.width / 2 - width / 2, 12, innerWidth - width - 12)}px`;
-        menu.style.top = `${clamp(rect.bottom + 8, 12, innerHeight - 180)}px`;
+        menu.style.top = `${clamp(rect.bottom + 8, 12, innerHeight - 162)}px`;
     }
     function start(person, node) {
         if (!player.isFree || !node || !person || person.state.location.scene !== player.sceneId) return;
@@ -80,7 +91,6 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
         state = 'menu';
         boop(node);
         placeMenu(node.getBoundingClientRect());
-        root.querySelector('.person-menu-name').textContent = person.name.toUpperCase();
         root.querySelector('[data-person-action="primary"]').textContent = person.kind === 'character' ? 'INTERACT' : 'TALK';
         root.classList.add('open');
         menu.hidden = false;
@@ -189,7 +199,10 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
         if (state === 'text') { advanceText(); return; }
         if (state === 'check') return;
         const action = event.target.closest('[data-person-action]')?.dataset.personAction;
-        if (!action) return;
+        if (!action) {
+            if ((state === 'card' || state === 'observe') && event.target === portrait) boopPortrait();
+            return;
+        }
         if (action === 'leave') complete();
         else if (action === 'primary' && state === 'menu') {
             if (current.kind === 'character') showCard();
