@@ -31,6 +31,7 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
     let finishing = false;
     let portraitPixels = null;
     let portraitSource = null;
+    let cardOrigin = null;
 
     function resetVisuals() {
         menu.hidden = true;
@@ -120,7 +121,8 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
         player.setInteraction('PERSON');
         state = 'menu';
         boop(node);
-        placeMenu(node.getBoundingClientRect());
+        cardOrigin = node.getBoundingClientRect();
+        placeMenu(cardOrigin);
         root.querySelector('[data-person-action="primary"]').textContent = person.kind === 'character' ? 'INTERACT' : 'TALK';
         root.classList.add('open');
         menu.hidden = false;
@@ -143,6 +145,18 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
         root.querySelector('.person-observe-back').hidden = true;
         card.classList.remove('observing');
         root.classList.remove('portrait-observe');
+        // Animate from the selected actor's screen position, not a fixed scene spot.
+        if (cardOrigin && card.animate && matchMedia('(orientation:landscape)').matches &&
+            !matchMedia('(prefers-reduced-motion:reduce)').matches) {
+            const target = card.getBoundingClientRect();
+            const dx = cardOrigin.left + cardOrigin.width / 2 - (target.left + target.width / 2);
+            const dy = cardOrigin.top + cardOrigin.height / 2 - (target.top + target.height / 2);
+            card.animate([
+                { transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.16)`, opacity:.15 },
+                { transform:'translate(-50%,-50%) scale(1.025)', opacity:1, offset:.84 },
+                { transform:'translate(-50%,-50%) scale(1)', opacity:1 }
+            ], { duration:320, easing:'cubic-bezier(.18,.88,.24,1.05)' });
+        }
     }
     function observe() {
         state = 'observe';
@@ -187,8 +201,16 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
         const actor = document.querySelector(`[data-entity="${current.id}"]`) ||
             document.querySelector(`[data-movement-entity="${current.id}"]`);
         const rect = actor?.getBoundingClientRect();
-        speech.style.left = `${clamp((rect?.left ?? innerWidth / 2) - 35, 12, innerWidth - 360)}px`;
-        speech.style.top = `${clamp((rect?.top ?? innerHeight / 2) - 90, 12, innerHeight - 125)}px`;
+        const anchorX = rect ? rect.left + rect.width / 2 : innerWidth / 2;
+        const anchorY = rect ? rect.top + rect.height * .14 : innerHeight / 2;
+        const margin = 12;
+        const width = speech.offsetWidth || 340;
+        const height = speech.offsetHeight || 85;
+        const left = clamp(anchorX - width * .20, margin, Math.max(margin, innerWidth - width - margin));
+        const top = clamp(anchorY - height - 22, margin, Math.max(margin, innerHeight - height - 20));
+        speech.style.left = `${left}px`;
+        speech.style.top = `${top}px`;
+        speech.style.setProperty('--speech-pointer-x', `${clamp(anchorX - left - 8, 20, width - 28)}px`);
     }
     function renderLine() {
         clearInterval(typing);
