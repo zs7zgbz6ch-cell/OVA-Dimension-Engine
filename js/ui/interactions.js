@@ -1,15 +1,10 @@
 import { INTERACTION_CONTENT } from '../content/interactions.js';
+import { INTERACTION_TUNING } from '../content/tuning.js';
 import { resolveInteraction, selectInteraction } from '../core/interaction-content.js';
 import { sceneMeta } from './scene-view.js';
+import { createAlphaHitTester } from './alpha-hit.js';
+import { placePersonMenu } from './person-menu.js';
 
-const TIME_COST_MINUTES = 5;
-const TEXT_CHARACTERS_PER_SECOND = 35;
-const CHECK_ENTER_MS = 180;
-const CHECK_HOLD_MS = 2000;
-const CHECK_EXIT_MS = 600;
-const BOOP_MS = 220;
-const SPEECH_HEAD_CLEARANCE_PX = 36;
-const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 export function mountInteractions({ world, player, entities, simulation, say }) {
@@ -30,8 +25,7 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
     let selection = null;
     let dialogueFromCard = false;
     let finishing = false;
-    let portraitPixels = null;
-    let portraitSource = null;
+    const portraitHitTester = createAlphaHitTester(portrait, INTERACTION_TUNING.alphaThreshold);
     let cardOrigin = null;
 
     function resetVisuals() {
@@ -70,7 +64,7 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
             { transform: 'translate(-50%,-100%) scale(1.08,.91)', filter: 'brightness(1.23)', offset: .38 },
             { transform: 'translate(-50%,-100%) scale(.97,1.045)', filter: 'brightness(1.08)', offset: .72 },
             { transform: 'translate(-50%,-100%) scale(1)', filter: 'brightness(1)' }
-        ], { duration: BOOP_MS, easing: 'ease-out' });
+        ], { duration: INTERACTION_TUNING.boopMs, easing: 'ease-out' });
     }
     // The card artwork has a different transform origin than a scene sprite.
     // Animate the image itself without modifying its resting layout.
@@ -81,40 +75,10 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
             { transform: 'translateX(-50%) scale(1.045,.965)', offset: .38 },
             { transform: 'translateX(-50%) scale(.99,1.018)', offset: .72 },
             { transform: 'translateX(-50%) scale(1)' }
-        ], { duration: BOOP_MS, easing: 'ease-out' });
-    }
-    // Alpha-aware hit testing: transparent pixels of a portrait are not interactive.
-    // The canvas is only a cached mask; it never changes or redraws the artwork.
-    function portraitHit(event) {
-        if (event.target !== portrait || !portrait.complete || !portrait.naturalWidth) return false;
-        if (portraitSource !== portrait.currentSrc) {
-            portraitSource = portrait.currentSrc;
-            portraitPixels = null;
-            try {
-                const canvas = document.createElement('canvas');
-                canvas.width = portrait.naturalWidth;
-                canvas.height = portrait.naturalHeight;
-                const context = canvas.getContext('2d', { willReadFrequently: true });
-                context.drawImage(portrait, 0, 0);
-                portraitPixels = context.getImageData(0, 0, canvas.width, canvas.height);
-            } catch (error) {
-                // If a browser denies pixel access, keep the image interactive.
-                return true;
-            }
-        }
-        if (!portraitPixels) return true;
-        const rect = portrait.getBoundingClientRect();
-        const x = Math.floor((event.clientX - rect.left) * portraitPixels.width / rect.width);
-        const y = Math.floor((event.clientY - rect.top) * portraitPixels.height / rect.height);
-        if (x < 0 || y < 0 || x >= portraitPixels.width || y >= portraitPixels.height) return false;
-        return portraitPixels.data[(y * portraitPixels.width + x) * 4 + 3] > 24;
+        ], { duration: INTERACTION_TUNING.boopMs, easing: 'ease-out' });
     }
 
-    function placeMenu(rect) {
-        const width = 148;
-        menu.style.left = `${clamp(rect.left + rect.width / 2 - width / 2, 12, innerWidth - width - 12)}px`;
-        menu.style.top = `${clamp(rect.bottom + 8, 12, innerHeight - 148)}px`;
-    }
+
     function start(person, node) {
         if (!player.isFree || !node || !person || person.state.location.scene !== player.sceneId) return;
         if (!INTERACTION_CONTENT[person.id]) return;
@@ -123,7 +87,7 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
         state = 'menu';
         boop(node);
         cardOrigin = node.getBoundingClientRect();
-        placeMenu(cardOrigin);
+        placePersonMenu(menu, cardOrigin, innerWidth, innerHeight, INTERACTION_TUNING);
         root.querySelector('[data-person-action="primary"]').textContent = person.kind === 'character' ? 'INTERACT' : 'TALK';
         root.classList.add('open');
         menu.hidden = false;
@@ -138,8 +102,7 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
         root.querySelector('.person-card-name').textContent = current.name.toUpperCase();
         const location = sceneMeta(world, player.sceneId);
         root.querySelector('.person-card-subtitle').textContent = location.title.toUpperCase();
-        portraitPixels = null;
-        portraitSource = null;
+        portraitHitTester.reset();
         portrait.src = content.portrait;
         cardScene.style.backgroundImage = `url("${sceneMeta(world, player.sceneId).image}")`;
         root.querySelector('.person-card-actions').hidden = false;
@@ -156,7 +119,7 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
                 { transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.16)`, opacity:.15 },
                 { transform:'translate(-50%,-50%) scale(1.025)', opacity:1, offset:.84 },
                 { transform:'translate(-50%,-50%) scale(1)', opacity:1 }
-            ], { duration:320, easing:'cubic-bezier(.18,.88,.24,1.05)' });
+            ], { duration:INTERACTION_TUNING.cardOpenMs, easing:'cubic-bezier(.18,.88,.24,1.05)' });
         }
     }
     function observe() {
@@ -180,16 +143,16 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
         // Hold the input lock through the entrance delay and the entire exit.
         const identity = current;
         (async () => {
-            await delay(CHECK_ENTER_MS);
+            await delay(INTERACTION_TUNING.checkEnterMs);
             if (state !== 'check' || current !== identity) return;
             observation.hidden = false;
-            await delay(CHECK_HOLD_MS);
+            await delay(INTERACTION_TUNING.checkHoldMs);
             if (state !== 'check' || current !== identity) return;
             observation.classList.add('leaving');
-            await delay(CHECK_EXIT_MS);
+            await delay(INTERACTION_TUNING.checkExitMs);
             if (state !== 'check' || current !== identity) return;
             cursors.set(selected.key, selected.next);
-            complete(TIME_COST_MINUTES);
+            complete(INTERACTION_TUNING.timeCostMinutes);
         })();
     }
     function positionSpeech() {
@@ -203,15 +166,15 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
             document.querySelector(`[data-movement-entity="${current.id}"]`);
         const rect = actor?.getBoundingClientRect();
         const anchorX = rect ? rect.left + rect.width / 2 : innerWidth / 2;
-        const anchorY = rect ? rect.top + rect.height * .14 : innerHeight / 2;
-        const margin = 12;
-        const width = speech.offsetWidth || 340;
-        const height = speech.offsetHeight || 85;
-        const left = clamp(anchorX - width * .20, margin, Math.max(margin, innerWidth - width - margin));
-        const top = clamp(anchorY - height - SPEECH_HEAD_CLEARANCE_PX, margin, Math.max(margin, innerHeight - height - 20));
+        const anchorY = rect ? rect.top + rect.height * INTERACTION_TUNING.speechAnchorY : innerHeight / 2;
+        const margin = INTERACTION_TUNING.speechMarginPx;
+        const width = speech.offsetWidth || INTERACTION_TUNING.speechFallbackWidthPx;
+        const height = speech.offsetHeight || INTERACTION_TUNING.speechFallbackHeightPx;
+        const left = clamp(anchorX - width * INTERACTION_TUNING.speechHorizontalOffset, margin, Math.max(margin, innerWidth - width - margin));
+        const top = clamp(anchorY - height - INTERACTION_TUNING.speechHeadClearancePx, margin, Math.max(margin, innerHeight - height - INTERACTION_TUNING.speechBottomMarginPx));
         speech.style.left = `${left}px`;
         speech.style.top = `${top}px`;
-        speech.style.setProperty('--speech-pointer-x', `${clamp(anchorX - left - 8, 20, width - 28)}px`);
+        speech.style.setProperty('--speech-pointer-x', `${clamp(anchorX - left - INTERACTION_TUNING.speechPointerInsetPx, INTERACTION_TUNING.speechPointerMinPx, width - INTERACTION_TUNING.speechPointerMaxInsetPx)}px`);
     }
     function renderLine() {
         clearInterval(typing);
@@ -222,7 +185,7 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
             shown = Math.min(full.length, shown + 1);
             speechText.textContent = full.slice(0, shown);
             if (shown === full.length) { clearInterval(typing); typing = null; }
-        }, 1000 / TEXT_CHARACTERS_PER_SECOND);
+        }, 1000 / INTERACTION_TUNING.textCharactersPerSecond);
     }
     function talk(fromCard) {
         const set = resolveInteraction(INTERACTION_CONTENT, current, player.sceneId, 'talk');
@@ -248,7 +211,7 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
         }
         if (++lineIndex < lines.length) { renderLine(); return; }
         cursors.set(selection.key, selection.next);
-        complete(TIME_COST_MINUTES);
+        complete(INTERACTION_TUNING.timeCostMinutes);
     }
     // Capture input on the full-screen layer; a text-dismissal tap must never
     // activate another actor or scene control beneath it.
@@ -263,7 +226,7 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
         const action = event.target.closest('[data-person-action]')?.dataset.personAction;
         if (!action) {
             if (state === 'card' || state === 'observe') {
-                if (portraitHit(event)) boopPortrait();
+                if (portraitHitTester.hit(event)) boopPortrait();
                 else if (event.target === root) complete();
             } else if (state === 'menu' && event.target === root) complete();
             return;
