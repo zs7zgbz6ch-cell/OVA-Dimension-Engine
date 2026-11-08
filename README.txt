@@ -1,68 +1,39 @@
-OVA-Dimension 0.4.2d.1 — Movement Corrections (TEST CANDIDATE)
+OVA-Dimension 0.4.2e — Interaction Foundation (testing candidate)
 
-Full project based on 0.4.2d. No scene spots, connections, agendas,
-simulation commitments, save namespaces, or sprite assets changed.
+Based on accepted 0.4.2d.1; all prior world, simulation, movement,
+transfer, save, and scene assets are included in this full project ZIP.
 
-- Directional pose uses authored depth scaling as well as X/Y displacement:
-  movement into the background uses back-facing three-quarter sprites.
-- Large time advances are seeks: the authoritative simulation still processes
-  all agenda events, but the presenter does not replay intermediate history.
-- A short advance (up to 60 minutes) may animate an event occurring exactly
-  at the resulting minute. Crossed earlier events are never replayed.
-- Cancellable animation and independent NPC visibility remain unchanged.
-- All module URLs and service-worker cache names updated for safe deployment.
+Tap any visible character or NPC: short boop then compact menu.
+NPC: TALK / CHECK / LEAVE. Character: INTERACT / CHECK / LEAVE.
+Character card: TALK / OBSERVE / GIVE (disabled) / STATUS (disabled) / LEAVE.
 
-GitHub upload: tests, core, UI, build, README, sw.js, index.html LAST.
+Talk presents a typewriter speech balloon. Tap to reveal the line, tap
+again to advance. NPCs cycle one line per completed conversation. Characters
+may have multi-line conversations; completion costs exactly 5 game minutes.
+Check presents a two-second observation, then floats/fades out, then costs
+exactly 5 game minutes. Leave and Observe cost no time. While interacting,
+scene taps, hold menu and development time controls are blocked. Interaction
+content is authored in js/content/interactions.js; resolver in
+js/core/interaction-content.js supports scene + agenda activity overrides.
 
-OVA-Dimension 0.4.2c.4 — Movement Waiting Visibility (TEST CANDIDATE)
+The character card uses the authored portrait asset and the player's
+current scene background. The portrait's white studio backdrop was keyed to
+transparent PNG for layering; the original source is unchanged.
 
-Complete project based on 0.4.2c.2. No world coordinates, agendas,
-simulation semantics, or save namespaces were changed.
+This release intentionally does NOT include agenda-start speech cues,
+real-time clock behavior, Give/Status gameplay or dialogue persistence.
+Dialogue rotation currently lasts for the active game session; save-format
+changes will be considered when interaction history becomes gameplay state.
 
-Changes:
-- Synchronously hide every participating final-position actor before any
-  delayed fade or walk begins; unrelated actors remain visible.
-- Restore each actor only after its final plan, or on cancellation.
-- Separate pure rounded-path geometry into js/core/route-path.js.
-- Split presentation into settle, walk, pose scheduling and cleanup functions.
-- Report unexpected presentation failures without hiding them.
-- Use Rionne's authentic right-facing three-quarter artwork, not mirroring.
-- Retain 0.4.2c.2 walking speed, rounded corners and transfer anchors.
-- Add actual presenter lifecycle regression test for immediate hide/cancel.
+iPhone test:
+- Tap Barmaid; TALK line 1; reveal/finish; confirm +5 minutes.
+- Repeat twice; confirm lines 2 and 3; repeat to cycle.
+- CHECK; wait for upward fade; confirm +5 minutes only afterward.
+- Tap Rionne; INTERACT; confirm current scene background and portrait.
+- OBSERVE/BACK; no time change. TALK; three lines; +5 once at end.
+- Confirm GIVE/STATUS disabled and LEAVE never advances time.
+- Confirm tapping another person during text cannot select them.
+- Confirm ordinary movement and +5m development advance remain intact.
 
-Not included: transfer pause/turn choreography, To/From behavior, Agenda Lab.
-
-GitHub changed/new file upload order (index.html LAST):
-1 assets/sprites/rionne-front-three-quarter-right.png (NEW)
-2 assets/sprites/rionne-back-three-quarter-right.png (NEW)
-3 js/core/route-path.js (NEW)
-4 js/core/movement-plan.js
-5 js/ui/movement-view.js
-6 js/content/game.js
-7 js/content/build.js
-8 js/core/world.js
-9 tests/movement-view.mjs
-10 tests/movement-lifecycle.mjs (NEW)
-11 tests/update-reliability.mjs
-12 README.txt
-13 sw.js
-14 index.html (LAST)
-
-Commit: fix: 0.4.2c.4 waiting sprite visibility
-
-Test on iPhone at 07:00, 09:00, 10:00, 18:00, then day two 07:00.
-Do not accept until visual tests pass and the independent code audit is done.
-
-0.4.2c.4: Mount starting-position walking overlays before any settle fades.
-The final-position sprites stay hidden while a walker waits for other NPCs.
-No changes to movement geometry, walking pace, or agendas.
-
-0.4.2d — Transfer choreography (testing candidate)
-- World Stage 0.8.2 is the authored source for fade connections and To/From.
-- Connection movement is preserved from the navigation graph into immutable
-  committed events and pure, ordered presentation actions.
-- Fade connections use paired endpoint fades; waypoints remain walk-only.
-- To/From markers are presentation-only and never navigation destinations.
-- Transfer pauses and turn timing live in js/core/transfer-plan.js.
-- The simulation, save namespace and accepted walking geometry are unchanged.
-- iPhone Safari verification is required before accepting this release.
+GitHub: upload changed/new files with sw.js before index.html;
+index.html last. Always upload complete paths.
