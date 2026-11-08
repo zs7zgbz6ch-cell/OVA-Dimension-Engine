@@ -1,71 +1,29 @@
-OVA-Dimension 0.4.2e — Interaction Foundation (testing candidate)
+OVA-Dimension 0.4.2e.8 — Character Card Framing (testing candidate)
 
-Based on accepted 0.4.2d.1; all prior world, simulation, movement,
-transfer, save, and scene assets are included in this full project ZIP.
+FULL PROJECT ARCHIVE
+This ZIP contains the entire game, including unchanged files and assets.
+Keep the directory structure intact. index.html belongs at repository root.
 
-Tap any visible character or NPC: short boop then compact menu.
-NPC: TALK / CHECK / LEAVE. Character: INTERACT / CHECK / LEAVE.
-Character card: TALK / OBSERVE / GIVE (disabled) / STATUS (disabled) / LEAVE.
+CHANGES FROM 0.4.2e.7
+- Opening character art sits lower, preserving the close-up zoom.
+- Landscape Observe artwork is smaller with the same foot anchor.
+- Portrait Observe reserves space below the iPhone top safe area for
+  character headings, and slightly reduces artwork height.
+- Landscape and portrait rotation hints are separate elements; only one
+  can be displayed in its matching orientation.
+- Existing card animation, dialogue, interaction blocking, back icon,
+  movement, simulation, and scene behavior remain unchanged.
 
-Talk presents a typewriter speech balloon. Tap to reveal the line, tap
-again to advance. NPCs cycle one line per completed conversation. Characters
-may have multi-line conversations; completion costs exactly 5 game minutes.
-Check presents a two-second observation, then floats/fades out, then costs
-exactly 5 game minutes. Leave and Observe cost no time. While interacting,
-scene taps, hold menu and development time controls are blocked. Interaction
-content is authored in js/content/interactions.js; resolver in
-js/core/interaction-content.js supports scene + agenda activity overrides.
+IPHONE TESTS
+1. Open character card: name and location must not overlap the head.
+2. Observe in landscape: full artwork, feet anchored, readable bottom hint.
+3. Rotate to portrait: heading below Dynamic Island, no sprite overlap.
+4. Only ROTATE TO CONTINUE GAMEPLAY is visible in portrait.
+5. Rotate back: the landscape hint returns and back arrow still works.
+6. Verify dialogue, NPC interactions, and other game systems still work.
 
-The character card uses the authored portrait asset and the player's
-current scene background. The portrait's white studio backdrop was keyed to
-transparent PNG for layering; the original source is unchanged.
-
-This release intentionally does NOT include agenda-start speech cues,
-real-time clock behavior, Give/Status gameplay or dialogue persistence.
-Dialogue rotation currently lasts for the active game session; save-format
-changes will be considered when interaction history becomes gameplay state.
-
-iPhone test:
-- Tap Barmaid; TALK line 1; reveal/finish; confirm +5 minutes.
-- Repeat twice; confirm lines 2 and 3; repeat to cycle.
-- CHECK; wait for upward fade; confirm +5 minutes only afterward.
-- Tap Rionne; INTERACT; confirm current scene background and portrait.
-- OBSERVE/BACK; no time change. TALK; three lines; +5 once at end.
-- Confirm GIVE/STATUS disabled and LEAVE never advances time.
-- Confirm tapping another person during text cannot select them.
-- Confirm ordinary movement and +5m development advance remain intact.
-
-GitHub: upload changed/new files with sw.js before index.html;
-index.html last. Always upload complete paths.
-
-0.4.2e.1 — Interaction Presentation Polish (test candidate)
-- Restores the original 853x1843 transparent Rionne character-card portrait.
-- Narrows the landscape card and gives Observe a wider framed view.
-- Adds artwork boop on taps in both Card and Observe (no time cost).
-- Removes the Check panel; text floats above the scene and fades upward.
-- Compacts and ornaments the three-option person menu; removes its name header.
-- Restores the subtle Observe orientation hint (landscape only).
-- No slide entrance, no magnifier yet, no changes to agenda or interaction timing.
-- The existing player lock and +5-minute Check/Talk completion remain authoritative.
-
-0.4.2e.2: Check narration enters after 180 ms, sits lower and falls on exit; compact menu decorations removed; card opens hips-up, Observe remains full-body; portrait Observe uses safe-area-aware viewport height. No simulation or agenda changes.
-
-0.4.2e.4 · Character card polish
-- Character headings use the current scene title, not a character-specific subtitle.
-- Interact uses a portrait crop; Observe keeps a full-figure view at a stable card width.
-- The card backdrop dismisses the card; portrait boops require a nontransparent pixel.
-- Dialogue remains modal and cannot be dismissed by tapping the card backdrop.
-- Portrait Observe fills the available viewport and shows a rotation hint.
-
-0.4.2e.5 · Character choreography
-- Card pops from selected actor position; Observe smoothly widens and zooms the same portrait.
-- Portrait Observe reserves space for its rotate hint and respects safe areas.
-- Dialogue pointer follows the actor anchor while the balloon stays on screen.
-
-0.4.2e.7 — Card Framing and Curved Back Icon (testing candidate)
-- Opening card art zooms closer and anchors lower, without person-specific rules.
-- Observe art is slightly smaller, retaining card widening and zoom animation.
-- Portrait card uses more of the dynamic viewport; the artwork retains space
-  for the heading and a single centered rotation instruction.
-- Observe back action uses an original, unframed curved-arrow SVG icon.
-- All interaction and dialogue behavior remains unchanged.
+RELEASE PROCESS
+Upload changed/new files in the order supplied with the release;
+service worker before index.html, and index.html last. This README is
+included in the changed-file list for this release. Test on iPhone
+before accepting the candidate.
