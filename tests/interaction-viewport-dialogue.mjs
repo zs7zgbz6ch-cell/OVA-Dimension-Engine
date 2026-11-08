@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const read = name => readFileSync(new URL(`../${name}`, import.meta.url), 'utf8');
+const ui = read('js/ui/interactions.js');
+const css = read('css/ovad.css');
+const html = read('index.html');
+assert.match(ui, /const SPEECH_HEAD_CLEARANCE_PX = 36/);
+assert.match(ui, /anchorY - height - SPEECH_HEAD_CLEARANCE_PX/);
+assert.match(ui, /if \(state === 'text'\) \{\s*advanceText\(\);\s*return;/);
+assert.match(ui, /root\.addEventListener\('pointerdown', event => event\.stopPropagation\(\)\)/);
+assert.match(css, /\.person-card:not\(\.observing\) \.person-portrait \{\s*height:160%;\s*bottom:-61%/);
+assert.match(css, /\.person-card\.observing \.person-observe-back \{[\s\S]*?top:14px;[\s\S]*?right:14px;/);
+assert.match(css, /\.person-interaction\.portrait-observe \.person-card\.observing \{[\s\S]*?width:calc\(100vw - 42px\);[\s\S]*?height:calc\(100dvh - 94px\)/);
+assert.match(html, /aria-label="Back to character actions"/);
+console.log('PASS: dialogue input lock, head clearance, opening zoom, Observe and portrait viewport');

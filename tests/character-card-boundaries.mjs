@@ -10,7 +10,7 @@ assert.match(ui, /getImageData\(0, 0, canvas.width, canvas.height\)/);
 assert.match(ui, /portraitPixels.data\[/);
 assert.match(ui, /if \(portraitHit\(event\)\) boopPortrait\(\)/);
 assert.match(ui, /else if \(event.target === root\) complete\(\)/);
-assert.match(ui, /if \(speech.contains\(event.target\)\) advanceText\(\)/);
+assert.match(ui, /if \(state === \'text\'\) \{\s*advanceText\(\)/);
 assert.match(ui, /location.title.toUpperCase\(\)/);
 assert.doesNotMatch(content, /subtitle: 'BERKLITH TAVERN'/);
 assert.doesNotMatch(html, /person-card-close/);
