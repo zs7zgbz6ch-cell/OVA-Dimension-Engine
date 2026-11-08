@@ -1,26 +1,26 @@
-# OVA-Dimension 0.4.2e.10 — Engine Cleanup 2
+# OVA-Dimension 0.4.2e.11 — Dialogue Regression Fix
 
-**Status:** iPhone testing candidate. Full game snapshot.
+Testing candidate based on complete 0.4.2e.10 Engine Cleanup 2.
 
 ## Scope
 
-- Correct the displayed build label to 0.4.2e.10 (the previous release still displayed e.6).
-- Extract reusable alpha-aware portrait hit-testing into `js/ui/alpha-hit.js`.
-- Extract viewport-aware person menu placement into `js/ui/person-menu.js`.
-- Centralize existing interaction timing and layout defaults in `js/content/tuning.js`.
-- Keep character-card choreography, Observe framing, dialogue flow, simulation time costs, and authored content unchanged.
-- Update import map, PWA cache, and source-shape tests for the moved responsibilities.
-
-**Not included:** the larger character-card/dialogue controller split, movement legacy-plan removal, or changes to game content. These remain separate cleanup steps.
+- Restore the missing `clamp` helper used by scene dialogue speech positioning. Without it, the first conversation could open an empty bubble and throw a ReferenceError before the typewriter starts.
+- Preserve authored dialogue: Rionne has three lines in one conversation; the barmaid has three separate one-line conversations which rotate between interactions.
+- No changes to character card geometry, dialogue content, movement, transfers, or save formats.
+- Refresh versioned import-map, asset references, and service-worker cache to 042e11 to avoid mixed PWA releases.
+- Add dialogue positioning regression test and update version-sensitive tests.
 
 ## Installation
 
-Upload changed files with their directories intact, `sw.js` before root `index.html`, and root `index.html` last. Refresh/reopen the installed PWA. The ZIP includes unchanged files.
+Upload changed files preserving their paths, with `sw.js` before `index.html` and `index.html` last. This is a full repository game ZIP, not a delta. Existing saves should remain intact. Verify on iPhone before accepting as stable.
 
-## iPhone regression checklist
+## iPhone regression checks
 
-Verify e.10 appears in the build label; test person menu positioning, transparent sprite taps, card opening and Observe, Talk and Check, portrait rotation, dialogue tap-to-advance and blocking, and walking/fade transfers. Do not promote to stable until checked.
+1. New Game > speak to barmaid: first speech bubble contains text immediately after typewriter begins, never stays empty.
+2. Tap to finish typing, then tap to dismiss. Repeat talk three times to see each of the three authored barmaid lines.
+3. Rionne > Interact > Talk: all three lines appear in sequence, each advancing on tap.
+4. Confirm Observe, cards, save/load, transfers and version label are unchanged.
 
-## Documentation
+## Verification
 
-`README.md` is authoritative; `README.txt` is the concise mobile companion.
+All 30 test files passed locally; ZIP integrity verified after packaging.
