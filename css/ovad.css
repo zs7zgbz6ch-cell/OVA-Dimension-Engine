@@ -87,14 +87,14 @@
 .person-interaction{position:fixed;inset:0;z-index:6800;pointer-events:none;font-family:Georgia,'Times New Roman',serif}
 .person-interaction.open{pointer-events:auto}
 .person-interaction[hidden],.person-interaction [hidden]{display:none!important}
-.person-menu{position:fixed;width:166px;padding:10px 11px;border:1px solid rgba(229,187,111,.74);border-radius:17px;background:linear-gradient(150deg,rgba(44,25,17,.97),rgba(17,10,8,.98));box-shadow:0 12px 32px #0009;backdrop-filter:blur(8px)}
-.person-menu button,.person-card-actions button,.person-observe-back{display:block;width:100%;margin:5px 0;border:1px solid rgba(226,181,104,.56);border-radius:25px;background:rgba(21,11,8,.83);color:#f4e2c8;letter-spacing:.14em;font-size:12px;min-height:39px}
+.person-menu{position:fixed;width:148px;padding:7px 8px;border:1px solid rgba(229,187,111,.74);border-radius:13px;background:linear-gradient(150deg,rgba(44,25,17,.97),rgba(17,10,8,.98));box-shadow:0 12px 32px #0009;backdrop-filter:blur(8px)}
+.person-menu button,.person-card-actions button,.person-observe-back{display:block;width:100%;margin:5px 0;border:1px solid rgba(226,181,104,.56);border-radius:25px;background:rgba(21,11,8,.83);color:#f4e2c8;letter-spacing:.14em;font-size:12px;min-height:35px}
 .person-menu button:active,.person-card-actions button:active{background:rgba(128,81,39,.7)}
 .person-card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(396px,30vw);height:min(94vh,690px);border:1px solid rgba(235,191,117,.8);border-radius:23px;overflow:hidden;background:#20120c;box-shadow:0 15px 65px #0009}
 .person-interaction.with-card:before{content:'';position:absolute;inset:0;background:rgba(0,0,0,.38);backdrop-filter:blur(3px)}
 .person-card-scene{position:absolute;inset:0;background-position:center;background-size:cover;filter:brightness(.7)}
 .person-card-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(9,5,4,.5),transparent 35%,rgba(9,5,4,.1) 65%,rgba(9,5,4,.76))}
-.person-portrait{position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:137%;max-width:none;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 5px 12px #0006);pointer-events:auto;cursor:pointer;touch-action:manipulation}
+.person-portrait{position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:105%;max-width:none;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 5px 12px #0006);pointer-events:auto;cursor:pointer;touch-action:manipulation}
 .person-card-head{position:absolute;top:19px;left:24px;z-index:1;text-shadow:0 2px 8px #000}
 .person-card-name{font-size:24px;letter-spacing:.19em}
 .person-card-subtitle{font-size:9px;letter-spacing:.2em;color:#ead2a9;margin-top:4px}
@@ -103,8 +103,8 @@
 .person-card-actions button{margin:0;min-height:37px}
 .person-card-actions button:last-child{grid-column:1/-1}
 .person-card-actions button:disabled{opacity:.42;cursor:default}
-.person-card.observing .person-portrait{height:98%;max-width:99%}
-.person-card.observing{width:min(510px,39vw)}
+.person-card.observing .person-portrait{height:98%;max-width:none}
+.person-card.observing{width:min(396px,30vw)}
 .person-rotate-hint{position:absolute;z-index:2;bottom:20px;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:.15em;color:#e9cda4;text-shadow:0 2px 8px #000;white-space:nowrap;pointer-events:none;animation:portraitHint 2s ease-in-out infinite}
 .person-card:not(.observing) .person-rotate-hint{display:none}
 @keyframes portraitHint{0%,100%{opacity:.3}50%{opacity:.95}}
@@ -117,6 +117,48 @@
 .person-observation.leaving{animation:observationOut .6s ease-in forwards}
 @keyframes observationIn{from{opacity:0;transform:translate(-50%,-12px)}to{opacity:1;transform:translate(-50%,0)}}
 @keyframes observationOut{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,35px)}}
-@media(max-height:430px){.person-card{height:95vh;width:min(396px,30vw)}.person-card.observing{width:min(510px,39vw)}.person-card-name{font-size:20px}.person-card-actions button{min-height:29px;font-size:10px}.person-card-actions{gap:3px 8px}.person-speech.card-speech{top:20%}}
-@media(orientation:portrait){.person-interaction.with-card{z-index:10010}.person-card{width:96vw;height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8px);top:50%}.person-card.observing{width:96vw}.person-rotate-hint{display:none}.person-speech.card-speech{left:7vw;top:auto;bottom:12%;width:86vw}.person-card.observing{height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8px)}body:has(.person-interaction.portrait-observe) .orientation-guard{display:none}.person-interaction.portrait-observe{z-index:10010}}
+@media(max-height:430px){.person-card{height:95vh;width:min(396px,30vw)}.person-card.observing{width:min(396px,30vw)}.person-card-name{font-size:20px}.person-card-actions button{min-height:29px;font-size:10px}.person-card-actions{gap:3px 8px}.person-speech.card-speech{top:20%}}
+@media(orientation:portrait){.person-interaction.with-card{z-index:10010}.person-card{width:96vw;height:calc(100dvh - 12px);top:50%}.person-card.observing{width:96vw}.person-rotate-hint{display:none}.person-speech.card-speech{left:7vw;top:auto;bottom:12%;width:86vw}.person-card.observing{height:calc(100dvh - 12px)}body:has(.person-interaction.portrait-observe) .orientation-guard{display:none}.person-interaction.portrait-observe{z-index:10010}}
 @media(prefers-reduced-motion:reduce){.person-observation,.person-observation.leaving,.person-rotate-hint{animation:none}}
+
+/* Character art: frame the face in Interact, the full figure in Observe. */
+.person-card:not(.observing) .person-portrait{
+    height:112%;
+    bottom:-17%;
+}
+.person-card.observing .person-portrait{bottom:0;height:98%}
+.person-card{isolation:isolate}
+.person-card-scene,.person-card-shade,.person-card-head{pointer-events:none}
+.person-portrait{z-index:1}
+.person-card-head,.person-card-actions,.person-observe-back,.person-rotate-hint{z-index:2}
+.person-portrait{pointer-events:auto}
+.person-portrait:not([src]){pointer-events:none}
+.person-portrait{animation:none}
+.person-portrait{user-select:none;-webkit-user-drag:none}
+.person-card.observing .person-portrait{height:98%}
+.person-portrait{object-fit:contain}
+.person-portrait{width:auto}
+.person-card.observing .person-portrait{max-height:none}
+.person-card:not(.observing) .person-portrait{max-height:none}
+.person-portrait{transform-origin:center bottom}
+.person-interaction.portrait-observe .person-card{
+    height:calc(100dvh - 12px);
+    max-height:none;
+}
+@media(orientation:portrait){
+    .person-interaction.portrait-observe .person-card{
+        top:50%;height:calc(100dvh - 12px);width:calc(100vw - 20px);
+        max-height:none;
+    }
+    .person-interaction.portrait-observe .person-card.observing .person-portrait{
+        height:98%;bottom:0;
+    }
+    .person-interaction.portrait-observe .person-rotate-hint{display:block;bottom:13px}
+    .person-interaction.portrait-observe .person-rotate-hint::after{content:'ROTATE TO CONTINUE GAMEPLAY'}
+    .person-interaction.portrait-observe .person-rotate-hint{font-size:0}
+    .person-interaction.portrait-observe .person-rotate-hint::after{font-size:10px}
+    .person-interaction.portrait-observe .person-observe-back{display:none}
+}
+
+/* Dialogue advances only when its balloon is tapped. */
+.person-speech{pointer-events:auto}
