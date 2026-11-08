@@ -1,5 +1,5 @@
 export const BUILD_INFO = Object.freeze({
-    version: '0.4.2e.4',
+    version: '0.4.2e.5',
     name: 'CHARACTER CARD POLISH'
 });
 
