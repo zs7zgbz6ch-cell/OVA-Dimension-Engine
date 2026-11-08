@@ -1,24 +1,23 @@
-# OVA-Dimension 0.4.2e.8
+# OVA-Dimension 0.4.2e.9 — Engine Cleanup 1
 
-**Status:** iPhone testing candidate. Complete game repository snapshot.
+**Status:** iPhone testing candidate, not yet accepted. Complete game repository snapshot.
 
-## Changes
+## Scope
 
-- Shared character-card opening framing lowered without changing zoom.
-- Observe art slightly reduced while keeping the bottom foot anchor.
-- Portrait heading moved beneath the top safe area; art height reduced.
-- Orientation-specific rotation instructions replace duplicated text.
+- Move existing motion and transfer timing defaults into `js/content/tuning.js`.
+- Re-export the same constants from their previous modules to preserve callers and tests.
+- Replace the movement view's numeric stagger cap with `MOTION.maxStaggerMs` (same value).
+- Make dialogue precedence and cursor keys explicit in `resolveInteraction`, including when authored contexts share an object.
+- Add regression tests. No intentional gameplay, layout, or asset changes.
 
-## Install
+## Installation
 
-Upload the complete archive contents to the repository root, preserving
-paths. `index.html` stays at the root. For incremental updates, follow
-the accompanying changed-file upload order, with `sw.js` before
-`index.html` and `index.html` last. Reload the installed PWA to pick up
-the new service-worker cache.
+Upload the changed files in the listed order, retaining paths; upload `sw.js` before `index.html`, and `index.html` last. The full ZIP includes unchanged assets and files. Restart/reload the iPhone PWA to update its service-worker cache.
 
-## iPhone acceptance checks
+## iPhone checks
 
-Check card title clearance, landscape Observe feet and top spacing,
-portrait Dynamic Island clearance, one rotation instruction only,
-and preserved card animation, dialogue and navigation behavior.
+Verify NPC dialogue cycles, character Talk and Check, movement cornering and stagger, walking and fading transfers, card/Observe/portrait layouts, and reload/offline startup. Report any regression before accepting this release.
+
+## Next cleanup candidates (not included)
+
+Split the interaction controller into focused modules, then review old planner compatibility paths and README duplication. No removal of compatibility code in this release.
