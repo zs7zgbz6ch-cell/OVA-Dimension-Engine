@@ -1,13 +1,7 @@
 // Pure presentation geometry. World Stage Lab owns all spot coordinates.
 // Waypoint corners may be rounded; transfer anchors are always exact.
-export const MOTION = Object.freeze({
-    msPerPercent: 55,
-    minWalkMs: 2200,
-    fadeMs: 520,
-    staggerMs: 170,
-    cornerRadius: 1.3,
-    cornerSlowdown: 0.32
-});
+import { MOTION } from '../content/tuning.js';
+export { MOTION };
 
 export function routeDistance(legs) {
     return legs.reduce((sum, leg) => sum + Math.hypot(

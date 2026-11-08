@@ -1,12 +1,8 @@
 // Pure transfer choreography. Connections decide *how* an edge is traversed.
 // To/From markers guide presentation only and never enter the navigation graph.
 
-export const TRANSFER_TIMING = Object.freeze({
-    arrivalPauseMs: 500,
-    turnPauseMs: 500,
-    fadeMs: 420,
-    markerWalkMs: 2400
-});
+import { TRANSFER_TIMING } from '../content/tuning.js';
+export { TRANSFER_TIMING };
 
 function location(world, step) {
     const spot = world.spot(step.scene, step.spot);
