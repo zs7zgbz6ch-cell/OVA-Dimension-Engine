@@ -49,3 +49,10 @@ index.html last. Always upload complete paths.
 - The existing player lock and +5-minute Check/Talk completion remain authoritative.
 
 0.4.2e.2: Check narration enters after 180 ms, sits lower and falls on exit; compact menu decorations removed; card opens hips-up, Observe remains full-body; portrait Observe uses safe-area-aware viewport height. No simulation or agenda changes.
+
+0.4.2e.4 · Character card polish
+- Character headings use the current scene title, not a character-specific subtitle.
+- Interact uses a portrait crop; Observe keeps a full-figure view at a stable card width.
+- The card backdrop dismisses the card; portrait boops require a nontransparent pixel.
+- Dialogue remains modal and cannot be dismissed by tapping the card backdrop.
+- Portrait Observe fills the available viewport and shows a rotation hint.
