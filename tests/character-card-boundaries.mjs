@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
-const ui = read('js/ui/interactions.js');
+const ui = read('js/ui/interactions.js') + read('js/ui/alpha-hit.js');
 const css = read('css/ovad.css');
 const html = read('index.html');
 const content = read('js/content/interactions.js');
 assert.match(ui, /function portraitHit\(event\)/);
 assert.match(ui, /getImageData\(0, 0, canvas.width, canvas.height\)/);
-assert.match(ui, /portraitPixels.data\[/);
-assert.match(ui, /if \(portraitHit\(event\)\) boopPortrait\(\)/);
+assert.match(ui, /pixels.data\[/);
+assert.match(ui, /if \(portraitHitTester.hit\(event\)\) boopPortrait\(\)/);
 assert.match(ui, /else if \(event.target === root\) complete\(\)/);
 assert.match(ui, /if \(state === \'text\'\) \{\s*advanceText\(\)/);
 assert.match(ui, /location.title.toUpperCase\(\)/);

@@ -9,7 +9,7 @@ assert.equal(createHash('sha256').update(read('assets/characters/rionne-card.png
   '6a0205be22096c154214aa0e00f931792cf4c6e1a8ba83e40972e5acc06a7f8d');
 assert.match(ui, /function boopPortrait\(/);
 assert.match(ui, /state === 'card' \|\| state === 'observe'/);
-assert.match(ui, /complete\(TIME_COST_MINUTES\)/);
+assert.match(ui, /complete\(INTERACTION_TUNING.timeCostMinutes\)/);
 assert.match(ui, /if \(state === 'check'\) return/);
 assert.match(css, /\.person-observation\{[^}]*background:none;border:0/);
 assert.match(css, /\.person-card\.observing\{width:min\(396px,30vw\)\}/);

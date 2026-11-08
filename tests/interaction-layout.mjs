@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+const tuning = readFileSync(new URL('../js/content/tuning.js', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../css/ovad.css', import.meta.url), 'utf8');
 const js = readFileSync(new URL('../js/ui/interactions.js', import.meta.url), 'utf8');
-assert.match(js, /const CHECK_ENTER_MS = 180/);
-assert.match(js, /await delay\(CHECK_ENTER_MS\)/);
+assert.match(tuning, /checkEnterMs: 180/);
+assert.match(js, /await delay\(INTERACTION_TUNING.checkEnterMs\)/);
 assert.ok(js.indexOf('await delay(CHECK_ENTER_MS)') < js.indexOf('observation.hidden = false;', js.indexOf('function showCheck()')));
 assert.match(css, /\.person-observation\{[^}]*bottom:12%/);
 assert.ok(css.includes("translate(-50%,35px)"));
