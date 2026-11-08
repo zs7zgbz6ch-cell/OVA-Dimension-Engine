@@ -12,7 +12,7 @@ assert.match(ui, /state === 'card' \|\| state === 'observe'/);
 assert.match(ui, /complete\(TIME_COST_MINUTES\)/);
 assert.match(ui, /if \(state === 'check'\) return/);
 assert.match(css, /\.person-observation\{[^}]*background:none;border:0/);
-assert.match(css, /\.person-card\.observing\{width:min\(510px,39vw\)\}/);
+assert.match(css, /\.person-card\.observing\{width:min\(396px,30vw\)\}/);
 assert.match(html, /ROTATE FOR PORTRAIT VIEW/);
 assert.doesNotMatch(html, /person-menu-name/);
 assert.doesNotMatch(css, /person-card[^\n]*slide/i);
