@@ -348,3 +348,37 @@
         font-size:clamp(12px,3.2vw,15px);
     }
 }
+
+
+/* 0.4.2e.8 — Reserved card typography and artwork space.
+   Shared across every character; the feet remain the visual anchor. */
+.person-card:not(.observing) .person-portrait {
+    height:180%;
+    bottom:-90%;
+}
+.person-card.observing .person-portrait {
+    height:85%;
+    bottom:37px;
+}
+/* Only one instruction is visible for the current orientation. */
+.person-rotate-hint .hint-portrait { display:none; }
+.person-rotate-hint .hint-landscape { display:inline; }
+@media (orientation:portrait) {
+    .person-interaction.portrait-observe .person-card-head {
+        top:max(70px, calc(env(safe-area-inset-top, 0px) + 30px));
+    }
+    .person-interaction.portrait-observe .person-card.observing .person-portrait {
+        height:calc(100% - 155px);
+        bottom:48px;
+    }
+    .person-interaction.portrait-observe .person-rotate-hint {
+        font-size:clamp(12px,3.2vw,15px);
+        color:#e9cda4;
+    }
+    .person-interaction.portrait-observe .person-rotate-hint::after {
+        content:none;
+        display:none;
+    }
+    .person-interaction.portrait-observe .person-rotate-hint .hint-landscape { display:none; }
+    .person-interaction.portrait-observe .person-rotate-hint .hint-portrait { display:inline; }
+}
