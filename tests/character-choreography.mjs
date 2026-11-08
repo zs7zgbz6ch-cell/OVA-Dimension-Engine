@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const css = readFileSync(new URL('../css/ovad.css', import.meta.url), 'utf8');
+const js = readFileSync(new URL('../js/ui/interactions.js', import.meta.url), 'utf8');
+assert.match(css, /width:min\(31\.5vw,425px\)/, 'Observe uses old landscape widening');
+assert.match(css, /height 380ms cubic-bezier/, 'Portrait zoom transition');
+assert.match(css, /height:145%;\s*bottom:-52%/, 'Opening portrait crop');
+assert.match(css, /height:96%;\s*bottom:0/, 'Observe full body');
+assert.match(js, /cardOrigin = node.getBoundingClientRect/, 'Card opens from actor');
+assert.match(js, /scale\(\.16\)/, 'Character-origin pop');
+assert.match(js, /--speech-pointer-x/, 'Speech pointer tracks anchor');
+assert.match(css, /height:calc\(92% - 48px\)/, 'Portrait hint has reserved space');
+console.log('PASS character choreography contracts');
