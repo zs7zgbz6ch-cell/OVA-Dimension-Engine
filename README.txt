@@ -61,3 +61,11 @@ index.html last. Always upload complete paths.
 - Card pops from selected actor position; Observe smoothly widens and zooms the same portrait.
 - Portrait Observe reserves space for its rotate hint and respects safe areas.
 - Dialogue pointer follows the actor anchor while the balloon stays on screen.
+
+0.4.2e.7 — Card Framing and Curved Back Icon (testing candidate)
+- Opening card art zooms closer and anchors lower, without person-specific rules.
+- Observe art is slightly smaller, retaining card widening and zoom animation.
+- Portrait card uses more of the dynamic viewport; the artwork retains space
+  for the heading and a single centered rotation instruction.
+- Observe back action uses an original, unframed curved-arrow SVG icon.
+- All interaction and dialogue behavior remains unchanged.
