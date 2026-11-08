@@ -3,7 +3,6 @@
 export const INTERACTION_CONTENT = Object.freeze({
     CHARACTER_01: {
         portrait: './assets/characters/rionne-card.png',
-        subtitle: 'BERKLITH TAVERN',
         default: {
             talk: [[
                 "Well, hello there. It's nice to see you.",
