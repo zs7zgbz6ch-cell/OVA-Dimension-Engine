@@ -300,3 +300,51 @@
 @media (prefers-reduced-motion:reduce) {
     .person-card.observing .person-observe-back {animation:none}
 }
+
+
+/* 0.4.2e.7 — Shared character framing and viewport refinements.
+   Composition is defined by card mode, not by person identity. */
+.person-card:not(.observing) .person-portrait {
+    height:180%;
+    bottom:-74%;
+}
+.person-card.observing .person-portrait {
+    height:91%;
+    bottom:37px;
+}
+/* Unframed curved back arrow, sized for touch without a visible button panel. */
+.person-card.observing .person-observe-back {
+    display:grid;
+    place-items:center;
+    width:43px;
+    height:43px;
+    min-height:43px;
+    top:12px;
+    right:12px;
+    padding:0;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    color:#f5d596;
+    filter:drop-shadow(0 2px 4px #160a07);
+}
+.person-observe-back svg { width:34px; height:34px; }
+.person-card.observing .person-rotate-hint { bottom:13px; }
+@media (orientation:portrait) {
+    .person-interaction.portrait-observe .person-card.observing {
+        width:calc(100vw - 32px);
+        height:calc(100dvh - 30px);
+        max-height:none;
+    }
+    .person-interaction.portrait-observe .person-card.observing .person-portrait {
+        height:calc(100% - 88px);
+        bottom:48px;
+    }
+    .person-interaction.portrait-observe .person-rotate-hint {
+        bottom:14px;
+        white-space:nowrap;
+    }
+    .person-interaction.portrait-observe .person-rotate-hint::after {
+        font-size:clamp(12px,3.2vw,15px);
+    }
+}
