@@ -47,3 +47,5 @@ index.html last. Always upload complete paths.
 - Restores the subtle Observe orientation hint (landscape only).
 - No slide entrance, no magnifier yet, no changes to agenda or interaction timing.
 - The existing player lock and +5-minute Check/Talk completion remain authoritative.
+
+0.4.2e.2: Check narration enters after 180 ms, sits lower and falls on exit; compact menu decorations removed; card opens hips-up, Observe remains full-body; portrait Observe uses safe-area-aware viewport height. No simulation or agenda changes.
