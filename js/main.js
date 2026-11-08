@@ -16,6 +16,7 @@ import { mountSaveMenu } from './ui/save-menu.js';
 import { mountTravelView } from './ui/travel-view.js';
 import { mountHoldInput } from './ui/hold-input.js';
 import { renderLocations, renderPlayerScene } from './ui/scene-view.js';
+import { mountInteractions } from './ui/interactions.js';
 import { createMovementView } from './ui/movement-view.js';
 
 const $ = selector => document.querySelector(selector);
@@ -82,6 +83,7 @@ async function boot() {
     menu.setRefreshSlots(saveMenu.refreshSlots);
     mountTravelView({ world, player, travel, say, refreshView });
     mountHoldInput({ app, player, openMenu: menu.openMenu, isBlocked: menu.isBlocked });
+    mountInteractions({ world, player, entities, simulation, say });
 
     refreshView();
 
