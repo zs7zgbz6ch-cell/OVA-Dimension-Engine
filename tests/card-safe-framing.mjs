@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const css=readFileSync('css/ovad.css','utf8');
+const html=readFileSync('index.html','utf8');
+assert.match(html, /class="hint-landscape">ROTATE FOR PORTRAIT VIEW/);
+assert.match(html, /class="hint-portrait">ROTATE TO CONTINUE GAMEPLAY/);
+assert.match(css, /\.person-rotate-hint::after\s*\{\s*content:none;/);
+assert.match(css, /safe-area-inset-top/);
+assert.match(css, /height:calc\(100% - 155px\)/);
+assert.match(css, /bottom:-90%/);
+assert.match(css, /height:85%/);
+console.log('Card framing and orientation hint checks passed');
