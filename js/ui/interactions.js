@@ -8,6 +8,7 @@ const CHECK_ENTER_MS = 180;
 const CHECK_HOLD_MS = 2000;
 const CHECK_EXIT_MS = 600;
 const BOOP_MS = 220;
+const SPEECH_HEAD_CLEARANCE_PX = 36;
 const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -207,7 +208,7 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
         const width = speech.offsetWidth || 340;
         const height = speech.offsetHeight || 85;
         const left = clamp(anchorX - width * .20, margin, Math.max(margin, innerWidth - width - margin));
-        const top = clamp(anchorY - height - 22, margin, Math.max(margin, innerHeight - height - 20));
+        const top = clamp(anchorY - height - SPEECH_HEAD_CLEARANCE_PX, margin, Math.max(margin, innerHeight - height - 20));
         speech.style.left = `${left}px`;
         speech.style.top = `${top}px`;
         speech.style.setProperty('--speech-pointer-x', `${clamp(anchorX - left - 8, 20, width - 28)}px`);
@@ -255,7 +256,7 @@ export function mountInteractions({ world, player, entities, simulation, say }) 
     root.addEventListener('click', event => {
         event.stopPropagation();
         if (state === 'text') {
-            if (speech.contains(event.target)) advanceText();
+            advanceText();
             return;
         }
         if (state === 'check') return;
