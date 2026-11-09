@@ -1,6 +1,6 @@
-import { TRANSFER_TIMING } from '../core/transfer-plan.js';
+import { MOTION, TRANSFER_TIMING } from '../content/tuning.js';
 import { movementPose, planMovement } from '../core/movement-plan.js';
-import { MOTION, routeFrames, walkDuration } from '../core/route-path.js';
+import { routeFrames, walkDuration } from '../core/route-path.js';
 import { ENTITY_MOVEMENT_SPRITES } from '../content/game.js';
 
 function spriteFor(entity, pose) {
@@ -206,29 +206,10 @@ async function playActions(node, entity, plan, state) {
     }
 }
 
-async function playWalk(node, entity, plan, state) {
-    if (plan.actions) {
-        await playActions(node, entity, plan, state);
-        return;
-    }
-    // Compatibility with older movement plans used by independent callers.
-    for (const arrival of plan.arrivals || []) {
-        await fadeAt(node, entity, arrival, 0, 1, state);
-    }
-    await playLegs(node, entity, plan.legs || [], state);
-    for (const departure of plan.departures || []) {
-        await fadeAt(node, entity, departure, 1, 0, state);
-    }
-}
-
 function planStart(plan) {
     if (plan.mode === 'settle') return plan.fadeOut || plan.fadeIn;
-    if (plan.actions?.length) {
-        const first = plan.actions[0];
-        return first.at || first.from || first.legs?.[0]?.from ||
-            plan.legs?.[0]?.from;
-    }
-    return plan.arrivals?.[0] || plan.legs?.[0]?.from || plan.departures?.[0];
+    const first = plan.actions[0];
+    return first?.at || first?.from || first?.legs?.[0]?.from || null;
 }
 
 export function createMovementView({ world, entities, player }) {
@@ -280,7 +261,7 @@ export function createMovementView({ world, entities, player }) {
             if (plan.mode === 'settle') {
                 await playSettle(node, entity, plan, state);
             } else {
-                await playWalk(node, entity, plan, state);
+                await playActions(node, entity, plan, state);
             }
         } finally {
             node.remove();
@@ -351,7 +332,8 @@ export function createMovementView({ world, entities, player }) {
                 await wait(delay, state.abort.signal);
                 if (!state.abort.signal.aborted) {
                     const preparedNode = preparedWalks.get(plan) || null;
-                    if (preparedNode && settlingEntities.has(plan.entityId) && !plan.arrivals?.length && plan.actions?.[0]?.kind !== 'fade-in') {
+                    if (preparedNode && settlingEntities.has(plan.entityId) && plan.actions?.[0]?.kind !== 'fade-in' &&
+                        !(plan.actions?.[0]?.kind === 'marker' && plan.actions[0].entering)) {
                         preparedNode.style.opacity = 1;
                     }
                     await playPlan(plan, state, stage, preparedNode);
