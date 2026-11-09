@@ -32,19 +32,6 @@ function spotAt(world, node) {
     return Object.freeze({ scene: node.scene, spot: node.spot, type: spot.type, x: spot.x, y: spot.y, scale: spot.scale });
 }
 
-function visibleLegs(world, route, scene) {
-    const legs = [];
-    for (let i = 1; i < route.length; i++) {
-        if (route[i - 1].scene !== scene || route[i].scene !== scene) continue;
-        if (route[i].movement === 'fade' ||
-            world.connectionMovement?.(route[i - 1], route[i]) === 'fade') continue;
-        const from = spotAt(world, route[i - 1]);
-        const to = spotAt(world, route[i]);
-        legs.push(Object.freeze({ from, to, pose: movementPose(from, to), smoothArrival: to.type === 'waypoint' }));
-    }
-    return Object.freeze(legs);
-}
-
 // Only live boundary events animate. Crossed events are already committed to
 // authoritative state and must never create historical presentation work.
 export function planMovement({ moves, endMinute, startMinute = endMinute, scene, world }) {
@@ -66,21 +53,13 @@ export function planMovement({ moves, endMinute, startMinute = endMinute, scene,
         const route = move.route;
         const visitsScene = route.some(step => step.scene === scene);
         if (!visitsScene) continue;
-        if (witnessed) {
-            const actions = transferActions(world, route, scene, movementPose);
-            const legs = visibleLegs(world, route, scene);
-            // A cross-scene hop is represented by its boundary nodes, never
-            // interpolated across two unrelated background coordinate systems.
-            const arrivals = [];
-            const departures = [];
-            for (let i = 0; i < route.length; i++) {
-                if (route[i].scene !== scene) continue;
-                if (i > 0 && route[i - 1].scene !== scene) arrivals.push(spotAt(world, route[i]));
-                if (i < route.length - 1 && route[i + 1].scene !== scene) departures.push(spotAt(world, route[i]));
-            }
-            plans.push(Object.freeze({ entityId: move.entityId, minute: move.minute, mode: 'walk',
-                actions, legs, arrivals: Object.freeze(arrivals), departures: Object.freeze(departures) }));
-        }
+        const actions = transferActions(world, route, scene, movementPose);
+        plans.push(Object.freeze({
+            entityId: move.entityId,
+            minute: move.minute,
+            mode: 'walk',
+            actions
+        }));
     }
     return Object.freeze(plans);
 }

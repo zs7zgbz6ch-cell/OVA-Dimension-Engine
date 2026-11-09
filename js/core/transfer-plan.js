@@ -2,7 +2,6 @@
 // To/From markers guide presentation only and never enter the navigation graph.
 
 import { TRANSFER_TIMING } from '../content/tuning.js';
-export { TRANSFER_TIMING };
 
 function location(world, step) {
     const spot = world.spot(step.scene, step.spot);
