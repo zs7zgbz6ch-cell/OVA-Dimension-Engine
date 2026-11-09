@@ -1,6 +1,6 @@
 export const BUILD_INFO = Object.freeze({
-    version: '0.4.2e.11',
-    name: 'DIALOGUE REGRESSION FIX'
+    version: '0.4.2e.12',
+    name: 'FOUNDATION CLEANUP'
 });
 
 export function buildLabel(){

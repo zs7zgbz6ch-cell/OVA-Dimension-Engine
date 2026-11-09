@@ -17,7 +17,6 @@ export const TRANSFER_TIMING = Object.freeze({
     markerWalkMs: 2400
 });
 
-
 // Presentation and interaction defaults. No character-specific behavior.
 export const INTERACTION_TUNING = Object.freeze({
     timeCostMinutes: 5,
