@@ -14,7 +14,7 @@ assert.match(menu, /placePersonMenu/);
 assert.match(controller, /portraitHitTester.hit/);
 assert.match(controller, /placePersonMenu\(menu/);
 assert.match(tuning, /INTERACTION_TUNING = Object.freeze/);
-assert.match(build, /0\.4\.2e\.11/);
+assert.match(build, /0\.4\.2e\.12/);
 for (const name of ['alpha-hit.js', 'person-menu.js']) {
     assert.ok(html.includes(name), `Import map: ${name}`);
     assert.ok(sw.includes(name), `Offline cache: ${name}`);

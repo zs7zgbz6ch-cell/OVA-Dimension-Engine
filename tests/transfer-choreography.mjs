@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { World } from '../js/core/world.js';
 import { movementPose, planMovement } from '../js/core/movement-plan.js';
-import { transferActions, TRANSFER_TIMING } from '../js/core/transfer-plan.js';
+import { transferActions } from '../js/core/transfer-plan.js';
+import { TRANSFER_TIMING } from '../js/content/tuning.js';
 
 const data = JSON.parse(readFileSync(new URL('../world/world-stage.json', import.meta.url)));
 const world = new World(data);

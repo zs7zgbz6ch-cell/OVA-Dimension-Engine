@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { walkDuration, routeFrames, MOTION } from '../js/core/route-path.js';
+import { walkDuration, routeFrames } from '../js/core/route-path.js';
+import { MOTION } from '../js/content/tuning.js';
 import { ENTITY_MOVEMENT_SPRITES } from '../js/content/game.js';
 const a={x:0,y:0,scale:30}, b={x:10,y:0,scale:40}, c={x:20,y:0,scale:50};
 const legs=[{from:a,to:b},{from:b,to:c}];

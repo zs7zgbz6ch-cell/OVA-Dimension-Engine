@@ -2,13 +2,11 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { MOTION, TRANSFER_TIMING } from '../js/content/tuning.js';
-import { MOTION as ROUTE_MOTION } from '../js/core/route-path.js';
-import { TRANSFER_TIMING as PLAN_TIMING } from '../js/core/transfer-plan.js';
 import { resolveInteraction } from '../js/core/interaction-content.js';
 
 test('motion and transfer timing have one shared source', () => {
-    assert.equal(MOTION, ROUTE_MOTION);
-    assert.equal(TRANSFER_TIMING, PLAN_TIMING);
+    assert.ok(Object.isFrozen(MOTION));
+    assert.ok(Object.isFrozen(TRANSFER_TIMING));
     assert.equal(MOTION.maxStaggerMs, 680);
     assert.equal(TRANSFER_TIMING.arrivalPauseMs, 500);
 });
@@ -29,6 +27,6 @@ test('dialogue precedence and stable cursor keys survive duplicate context refer
 test('cache and import map include tuning module', () => {
     const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
     const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
-    assert.match(html, /js\/content\/tuning\.js\?v=042e11/);
-    assert.match(sw, /js\/content\/tuning\.js\?v=042e11/);
+    assert.match(html, /js\/content\/tuning\.js\?v=042e12/);
+    assert.match(sw, /js\/content\/tuning\.js\?v=042e12/);
 });
